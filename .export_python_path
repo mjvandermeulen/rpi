@@ -1,0 +1,18 @@
+# mjvandermeulen
+# This file is called from .bashrc in the home dir
+# like this:
+#     if [ -f ~/Programming/Automation/.export_python_path ]; then
+#         . ~/Programming/Automation/.export_python_path
+#     fi
+
+# automation specific python path declaration
+
+# to check the PYTHONPATH
+# on the bash prompt type
+# $ python -c "import sys; print(sys.path)"
+# OR
+# $ python
+# $ import sys
+# $ sys.path
+
+export PYTHONPATH=$PYTHONPATH:~/Programming/Automation/python_libraries
