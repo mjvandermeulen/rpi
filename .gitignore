@@ -4,6 +4,7 @@
 # When remotely working from Mac
 .AppleDouble/
 .DS_Store
+# Editors
 .vscode
 
 # END mjvandermeulen
