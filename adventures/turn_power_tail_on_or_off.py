@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
+import automation_classes.powertail as powertail
 import sys
-import RPi.GPIO as io
 
-io.setmode(io.BCM)
+### settings ###
+pin_mode = "BCM"
 power_pin = 23
 
-io.setup(power_pin, io.OUT)
-io.output(power_pin, True)
-
+# create instance of PowerTail
+power = powertail.PowerTail(pin_mode, power_pin, False)
 if len(sys.argv) > 1 and 'n' in sys.argv[1]:
     power_on = True
 else:
@@ -17,13 +17,11 @@ else:
 print()
 print()
 
-
 if power_on:
     print("POWER ON")
 else:
     print("POWER OFF")
-io.output(power_pin, power_on)
-
+power.turn(power_on)
 
 print()
 print()
