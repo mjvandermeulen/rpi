@@ -22,7 +22,7 @@ With collaborators only merge branches on GitHub (pull requests). When working b
 
 What is on the pi, is what's currently deployed!
 
-Thoughts:
+### Thoughts
 
 - aliases point to the deployment directory.
 - what about classes: They are all in the Python Path?!!!!
@@ -30,9 +30,3 @@ Thoughts:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
-## Acknowledgments
-
-- Hat tip to anyone whose code was used
-- Inspiration
-- etc
