@@ -44,15 +44,18 @@ class PowerTail(object):
             True (on) or False (initially off)
         """
 
+        print("init powertail instance")
+
         self.pin = pin
+        print("  pin: {}".format(self.pin))
         if gpio_mode == "BOARD":
             GPIO.setmode(GPIO.BOARD)
         else:
             GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pin, GPIO.OUT)
-        print self.pin
         GPIO.output(self.pin, initial_output)
         self.output = initial_output
+        print("end init powertail instance")
 
     def turn(self, output=False):
         """
@@ -66,14 +69,14 @@ class PowerTail(object):
         """
         if self.output == output:
             if output:
-                print "staying on..."
+                print("staying on...")
             else:
-                print "staying off..."
+                print("staying off...")
         else:
             if output:
-                print "turning on..."
+                print("turning on...")
             else:
-                print "turning off..."
+                print("turning off...")
             GPIO.output(self.pin, output)
             self.output = output
 
@@ -82,32 +85,32 @@ class PowerTail(object):
         Turn power to True
         """
         if not self.output:
-            print "turning on"
+            print("turning on")
             GPIO.output(self.pin, True)
             self.output = True
         else:
-            print "staying on"
+            print("staying on")
 
     def turn_off(self):
         """
         Turn power to False
         """
         if self.output:
-            print "turning off"
+            print("turning off")
             GPIO.output(self.pin, False)
             self.output = False
         else:
-            print "staying off"
+            print("staying off")
 
     def toggle(self):
         """
         Toggle power (True -> False, or False to True)
         """
         if not self.output:
-            print "toggling the power tail OFF"
+            print("toggling the power tail OFF")
             GPIO.output(self.pin, False)
             self.output = False
         else:
-            print "toggling the power tail ON"
+            print("toggling the power tail ON")
             GPIO.output(self.pin, True)
             self.output = True

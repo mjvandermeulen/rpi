@@ -6,24 +6,24 @@ BCM = True
 
 
 def setmode(a):
-    print a
+    print("mac_dummy_libraries: RPi.GPIO. Parameter: {}".format(a))
 
 
 def setup(a, b):
-    print a
+    print("mac_dummy_libraries: RPi.GPIO. Parameter: {}".format(a))
 
 
 def input(a):
-    print a
+    print("mac_dummy_libraries: RPi.GPIO. Parameter: {}".format(a))
 
 
 def output(a, b):
-    print a
+    print("mac_dummy_libraries: RPi.GPIO. Parameter: {}".format(a))
 
 
 def cleanup():
-    print 'a'
+    print("mac_dummy_libraries: RPi.GPIO.")
 
 
 def setwarnings(flag):
-    print 'False'
+    print("mac_dummy_libraries: RPi.GPIO. Parameter: {}".format(flag))
