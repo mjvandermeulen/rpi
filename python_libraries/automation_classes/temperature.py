@@ -2,11 +2,14 @@
 
 import os
 import glob
+from time import time  # for plotting
 
 import matplotlib.pyplot as plt
 
+import automation_classes.temperature_reader as temperature_reader
 
-class temperature (object):
+
+class Temperature (object):
     """
     This class:
     - FOR NOW ALL IN FAHRENHEIT. otherwise it'll get messed up.
@@ -67,22 +70,46 @@ class temperature (object):
         self.interval = interval
 
         self.current_temp_f = 1000
-        self.current_temp_c = 1000
         self.throttle = -1
 
+        # current data
         self._integral = 0
 
-        self._x_plot = []
-        self._y_plot = []
+        # past (and current) data
+        self._time_list = []
+        self._t_list = []
+        # self._p_list = []
+        # self._i_list = []
+        # self._d_list = []
+
+        # plotting
         plt.ion()  # interactive on
 
+        self._temp_reader = temperature_reader.TemperatureReader()
+
+    def _calculate_throttle(self, t):
+        print("set throttle to -1 if temp too high, or 1 if too low")
+        if t < self.target_temp:
+            return 1
+        return -1
+
     def read_temp_f(self):
-        print("place call to temperature_reader here")
+        t = self._temp_reader.read_temp_f()
+        self._t_list.append(t)
+        self._time_list.append(time())
+        self.current_temp_f = t
+        self.throttle = self._calculate_throttle(t)
+        return t
 
     def plot(self):
         """
-        plot the current data (not the data that is written to file)
-
+        plot the current data (not data from a file)
         """
-        # FIRST IMPLEMENT READ TEMP
-        #   AND APPEND X AND Y VALUES THERE.
+        for t in self._t_list:
+            print("t: {:5.2f} fahrenheit".format(t))
+        plt.clf()
+        plt.scatter(self._time_list, self._t_list)
+        plt.plot(self._time_list, self._t_list)
+        # plt.show(block=True)# block=True only needed if plt.ion()
+        plt.pause(.001)
+        plt.show()  # plt.draw() in instructions.
