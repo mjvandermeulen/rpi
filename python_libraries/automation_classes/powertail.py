@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Black wire from power tail goes to ground
-# White wire from power tail goes to "pin"
+# White wire from power tail goes to "pin" (BCM 23 is often a good option for mjvandermeulen)
 #   depending on setmode:
 #     BOARD: numbers 1..40 (even on one side, odd on the other)
 #     BCM: (PREFERRED!) "names" printed on cobbler. On Cana Kit Card: GPIO 23 --> pin = 23

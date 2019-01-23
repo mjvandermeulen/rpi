@@ -2,7 +2,7 @@
 
 import os
 import glob
-from time import time  # for plotting
+from time import time  # for x axis plotting
 
 import matplotlib.pyplot as plt
 
@@ -65,10 +65,12 @@ class Temperature (object):
             time in seconds between readings (the default is 60, which [default_description])
 
         """
+        self._temp_reader = temperature_reader.TemperatureReader()
 
         self.target_temp = target_temp
         self.interval = interval
 
+        self._reading_count = 0
         self.current_temp_f = 1000
         self.throttle = -1
 
@@ -76,6 +78,7 @@ class Temperature (object):
         self._integral = 0
 
         # past (and current) data
+        self._reading_count_list = []
         self._time_list = []
         self._t_list = []
         # self._p_list = []
@@ -84,32 +87,35 @@ class Temperature (object):
 
         # plotting
         plt.ion()  # interactive on
+        self._fig, self._ax = plt.subplots()
 
-        self._temp_reader = temperature_reader.TemperatureReader()
+    def plot(self):
+        """
+        plot the current data (not data from a file)
+        """
+        # https://github.com/matplotlib/matplotlib/issues/7759#issuecomment-271110279
+        # as well: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html
+
+        # pylint: disable=no-member
+        self._ax.plot(self._reading_count_list, self._t_list)
+        self._fig.canvas.flush_events()
+        # pylint: enable=no-member
+
+    def detach_plot(self):
+        plt.ioff()
+        plt.show()
 
     def _calculate_throttle(self, t):
-        print("set throttle to -1 if temp too high, or 1 if too low")
         if t < self.target_temp:
             return 1
         return -1
 
     def read_temp_f(self):
         t = self._temp_reader.read_temp_f()
+        self._reading_count += 1
+        self._reading_count_list.append(self._reading_count)
         self._t_list.append(t)
         self._time_list.append(time())
         self.current_temp_f = t
         self.throttle = self._calculate_throttle(t)
         return t
-
-    def plot(self):
-        """
-        plot the current data (not data from a file)
-        """
-        for t in self._t_list:
-            print("t: {:5.2f} fahrenheit".format(t))
-        plt.clf()
-        plt.scatter(self._time_list, self._t_list)
-        plt.plot(self._time_list, self._t_list)
-        # plt.show(block=True)# block=True only needed if plt.ion()
-        plt.pause(.001)
-        plt.show()  # plt.draw() in instructions.

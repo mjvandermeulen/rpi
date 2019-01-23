@@ -1,5 +1,9 @@
 def ion():
-    print("dummy mac pyplot.ion()")
+    print("dummy mac pyplot")
+
+
+def ioff():
+    print("dummy mac pyplot")
 
 
 def clf():
@@ -20,6 +24,11 @@ def draw():
 
 def show():
     print("dummy mac pyplot")
+
+
+def subplots():
+    print("dummy mac pyplot")
+    return ('a', 'b')
 
 
 def pause(time):
