@@ -99,16 +99,50 @@ class Temperature (object):
         # pylint: disable=no-member
         self._ax.plot(self._reading_count_list, self._t_list)
         self._fig.canvas.flush_events()
+        plt.draw()
         # pylint: enable=no-member
 
     def detach_plot(self):
+        """
+        call this method after keyboard interrupt
+        in order to:
+        - preserve the plot (otherwise the program would end and the plot would disappear)
+        - halt the program, until the plot window is closed
+        """
+
         plt.ioff()
         plt.show()
 
-    def _calculate_throttle(self, t):
-        if t < self.target_temp:
+    def _calculate_throttle(self):
+        # !!! A negative error means current_temp < target_temp
+        error = self.current_temp_f - self.target_temp
+        # differential is avererage of last three reading / 2 (x axis 2 steps taken on average)
+        n = len(self._t_list)
+        sum = 0
+        for i in range(n-3, n):
+            if i < 0:
+                i = 0
+            sum += self._t_list[i]
+        average = sum / 3
+        d = average / 2
+
+        k_p = 3.0
+        k_d = 1.5
+
+        print("error: {:12.8}".format(error))
+        p_part = k_p * -error
+        print("p_part:  {:10.8}".format(p_part))
+        d_part = -k_d * d
+        print("d_part:  {:10.8}".format(d_part))
+
+        # pid = k_p * -error
+        pid = k_p * -error
+
+        if pid < -1:
+            return -1
+        if pid > 1:
             return 1
-        return -1
+        return pid
 
     def read_temp_f(self):
         t = self._temp_reader.read_temp_f()
@@ -117,5 +151,5 @@ class Temperature (object):
         self._t_list.append(t)
         self._time_list.append(time())
         self.current_temp_f = t
-        self.throttle = self._calculate_throttle(t)
+        self.throttle = self._calculate_throttle()
         return t

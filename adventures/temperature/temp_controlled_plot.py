@@ -6,15 +6,33 @@ from automation_classes import temperature as temperature
 from automation_classes import powertail as powertail
 
 target_temp = 180
-interval = 6
+interval = 60  # seconds
 
 
 temp = temperature.Temperature(target_temp, interval)
 power = powertail.PowerTail('BCM', 23, False)
 
+
+def run_throttled_power_interval(power, throttle, interval):
+    # example:
+    # interval = 60 seconds
+    #   throttle -1: 0 seconds on 60 off
+    #   throttle 0: 30 seconds on 30 off
+    #   throttle 1: 60 seconds on  0 off
+    # pass
+    time_on = int(round(((throttle + 1) / 2) * interval))
+    time_off = interval - time_on
+    if time_on > 0:
+        power.turn_on()
+        time.sleep(time_on)
+    if time_off > 0:
+        power.turn_off()
+        time.sleep(time_off)
+
+
 try:
     while True:
-        print("=== start ===")
+        print("=== start while loop in " + __file__ + " ===")
         t = temp.read_temp_f()
         throttle = temp.throttle
         print("throttle: {:7.5f}".format(throttle))
@@ -23,9 +41,8 @@ try:
         temp.plot()
 
         # power control
-        power.turn(throttle > 0)  # TODO flip sign!!!!!
-        print("=== end ===")
-        time.sleep(interval)
+        run_throttled_power_interval(power, throttle, interval)
+        print("=== end while loop in " + __file__ + " ===")
 
 except KeyboardInterrupt:
     print("keyboard interrupt")
