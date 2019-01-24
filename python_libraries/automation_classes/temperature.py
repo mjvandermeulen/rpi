@@ -116,6 +116,10 @@ class Temperature (object):
         plt.ioff()
         plt.show()
 
+    def _update_integral(self, error):
+        self._integral += error
+        return self._integral
+
     def _calculate_diff(self):
         """
         average of diff with last reading (weighs double)
@@ -146,21 +150,28 @@ class Temperature (object):
 
         # !!! A negative error means current_temp < target_temp
         error = self.current_temp - self.target_temp
-
+        self._update_integral(error)
+        i = self._integral
         d = self._calculate_diff()
 
         k_p = 0.5
+        k_i = 0.1
         k_d = 2
 
         print("error: {:12.8}".format(error))
-        print("d: {:12.8}".format(d))
+        print("i:     {:12.8}".format(i))
+        print("d:     {:12.8}".format(d))
+
+        print()
 
         p_part = k_p * -error
-        print("p_part:  {:10.8}".format(p_part))
-        d_part = -k_d * d
-        print("d_part:  {:10.8}".format(d_part))
+        print("p_part:  {:12.8}".format(p_part))
+        i_part = k_i * -i
+        print("i_part:  {:12.8}".format(i_part))
+        d_part = k_d * -d
+        print("d_part:  {:12.8}".format(d_part))
 
-        pid = k_p * -error - k_d * d
+        pid = p_part + i_part + d_part
 
         if pid < -1:
             return -1
