@@ -5,7 +5,7 @@ import time
 from automation_classes import temperature as temperature
 from automation_classes import powertail as powertail
 
-target_temp = 180
+target_temp = 155
 interval = 60  # seconds
 
 
@@ -37,7 +37,7 @@ try:
         throttle = temp.throttle
         print("throttle: {:7.5f}".format(throttle))
         print(
-            "The current temperature is {:5.1f} degrees Fahrenheit.".format(t))
+            "The current temperature is {:5.4f} degrees Fahrenheit.".format(t))
         temp.plot()
 
         # power control
@@ -46,5 +46,6 @@ try:
 
 except KeyboardInterrupt:
     print("keyboard interrupt")
+    power.turn_off()
     temp.detach_plot()
     # program halts here

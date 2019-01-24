@@ -22,7 +22,7 @@ class Temperature (object):
     ----------
     interval: int
         time in seconds between readings (not enforced, since timing is up to the caller of the class methods)
-    current_temp_f: float
+    current_temp: float
         current (last read) temperature in Fahrenheit
     current_temp_c: float
         current (last read) temperature in Celsius
@@ -70,8 +70,8 @@ class Temperature (object):
         self.target_temp = target_temp
         self.interval = interval
 
-        self._reading_count = 0
-        self.current_temp_f = 1000
+        # same as self._t_list[-1] but not redundant, since it's a public attribute and the list is not
+        self.current_temp = 1000
         self.throttle = -1
 
         # current data
@@ -97,7 +97,10 @@ class Temperature (object):
         # as well: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html
 
         # pylint: disable=no-member
-        self._ax.plot(self._reading_count_list, self._t_list)
+        # x_list = [i for i in range(len(self._t_list))] # list comprehesion
+        x_list = list(range(len(self._t_list)))
+
+        self._ax.plot(x_list, self._t_list)
         self._fig.canvas.flush_events()
         plt.draw()
         # pylint: enable=no-member
@@ -114,22 +117,27 @@ class Temperature (object):
         plt.show()
 
     def _calculate_throttle(self):
+
         # !!! A negative error means current_temp < target_temp
-        error = self.current_temp_f - self.target_temp
+        error = self.current_temp - self.target_temp
         # differential is avererage of last three reading / 2 (x axis 2 steps taken on average)
         n = len(self._t_list)
-        sum = 0
-        for i in range(n-3, n):
-            if i < 0:
-                i = 0
-            sum += self._t_list[i]
-        average = sum / 3
-        d = average / 2
+        if n < 3:
+            d = 0.0
+        else:
+            t = self._t_list[-1]
 
-        k_p = 3.0
-        k_d = 1.5
+            diff_prev_temp = t - self._t_list[-2]
+            diff_prev_prev_temp = (t - self._t_list[-3]) / 2
+            # give diff_prev_temp twice the weight
+            d = (2 * diff_prev_temp + diff_prev_prev_temp) / 3
+
+        k_p = 0.5
+        k_d = 2
 
         print("error: {:12.8}".format(error))
+        print("d: {:12.8}".format(d))
+
         p_part = k_p * -error
         print("p_part:  {:10.8}".format(p_part))
         d_part = -k_d * d
@@ -146,10 +154,8 @@ class Temperature (object):
 
     def read_temp_f(self):
         t = self._temp_reader.read_temp_f()
-        self._reading_count += 1
-        self._reading_count_list.append(self._reading_count)
+        self.current_temp = t
         self._t_list.append(t)
-        self._time_list.append(time())
-        self.current_temp_f = t
+        self._time_list.append(time())  # not used yet... jan 23 2019
         self.throttle = self._calculate_throttle()
         return t

@@ -55,6 +55,8 @@ class PowerTail(object):
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, initial_output)
         self.output = initial_output
+        print("on init turned powertail " +
+              ("on" if initial_output else "off"))
         print("end init powertail instance")
 
     def turn(self, output=False):
