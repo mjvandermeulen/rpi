@@ -116,21 +116,38 @@ class Temperature (object):
         plt.ioff()
         plt.show()
 
+    def _calculate_diff(self):
+        """
+        average of diff with last reading (weighs double)
+        and the diff with the reading before that.
+
+        Returns
+        -------
+        float
+            The differential
+        """
+
+        n = len(self._t_list)
+        if n < 3:
+            return 0.0
+
+        t = self._t_list[-1]
+        diff_prev_temp = t - self._t_list[-2]
+        diff_prev_prev_temp = (t - self._t_list[-3]) / 2
+        # give diff_prev_temp twice the weight
+        return (
+            (
+                2 * diff_prev_temp
+                + diff_prev_prev_temp
+            ) / 3
+        )
+
     def _calculate_throttle(self):
 
         # !!! A negative error means current_temp < target_temp
         error = self.current_temp - self.target_temp
-        # differential is avererage of last three reading / 2 (x axis 2 steps taken on average)
-        n = len(self._t_list)
-        if n < 3:
-            d = 0.0
-        else:
-            t = self._t_list[-1]
 
-            diff_prev_temp = t - self._t_list[-2]
-            diff_prev_prev_temp = (t - self._t_list[-3]) / 2
-            # give diff_prev_temp twice the weight
-            d = (2 * diff_prev_temp + diff_prev_prev_temp) / 3
+        d = self._calculate_diff()
 
         k_p = 0.5
         k_d = 2
@@ -143,8 +160,7 @@ class Temperature (object):
         d_part = -k_d * d
         print("d_part:  {:10.8}".format(d_part))
 
-        # pid = k_p * -error
-        pid = k_p * -error
+        pid = k_p * -error - k_d * d
 
         if pid < -1:
             return -1
