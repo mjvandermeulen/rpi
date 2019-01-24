@@ -116,8 +116,12 @@ class Temperature (object):
         plt.ioff()
         plt.show()
 
-    def _update_integral(self, error):
+    def _update_integral(self, error, min_integral, max_integral):
         self._integral += error
+        if self._integral > max_integral:
+            self._integral = max_integral
+        if self._integral < min_integral:
+            self._integral = min_integral
         return self._integral
 
     def _calculate_diff(self):
@@ -148,15 +152,19 @@ class Temperature (object):
 
     def _calculate_throttle(self):
 
+        # TODO: move to init or even better: to temp_control_settings.py
+        k_p = 0.5
+        k_i = 0.01
+        k_d = 2
+
+        # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)
+        min_i = -1 / k_i
+        max_i = 1 / k_i  # TODO: think about this value
         # !!! A negative error means current_temp < target_temp
         error = self.current_temp - self.target_temp
-        self._update_integral(error)
+        self._update_integral(error, min_i, max_i)
         i = self._integral
         d = self._calculate_diff()
-
-        k_p = 0.5
-        k_i = 0.1
-        k_d = 2
 
         print("error: {:12.8}".format(error))
         print("i:     {:12.8}".format(i))
