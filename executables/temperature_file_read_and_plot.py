@@ -39,22 +39,15 @@ else:  # if no exceptions:
                     differential.append(
                         data["differential"] + data["target_temp"])
                     target_temp.append(data["target_temp"])
-                    throttle.append(data["throttle"] *
-                                    10 + data["target_temp"])
+                    throttle.append(data["throttle"] * 10
+                                    + data["target_temp"])
                 # pylint:disable=all
-                # plt.plot(x_time, temp_stamp, 'b', legend="temp in F")
-                plt.plot(x_time, integral, 'y')
-                plt.plot(x_time, differential, 'r')
-                plt.plot(x_time, target_temp, 'b')
-                plt.plot(x_time, throttle, 'r')
-                # plt.legend(
-                #     (plot1, plot2, plot3, plot4, plot5),
-                #     ('temp in F', 'Integral', 'Differential',
-                #      'Target Temp', 'Throttle'),
-                #     'best',  # positioning
-                #     numpoints=1,
-                # )
-
+                plt.plot(x_time, temp_stamp, 'b', label="temp in F")
+                plt.plot(x_time, integral, 'y', label='Integral', marker='o')
+                plt.plot(x_time, differential, 'r', label='Differential')
+                plt.plot(x_time, target_temp, 'b', label='Target Temp')
+                plt.plot(x_time, throttle, 'r', label='Throttle')
+                plt.legend()
                 plt.show(block=True)
                 # block=True only needed if
                 # plt.ion()
