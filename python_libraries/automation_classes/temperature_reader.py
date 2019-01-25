@@ -4,6 +4,7 @@ import os
 import glob
 
 # time module needed to read until you find a proper temperature TODO: this is not so good.
+# TODO change name to probe_temperature_reader or probe_temperature_sensor
 import time
 
 

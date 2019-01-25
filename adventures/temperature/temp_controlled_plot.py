@@ -5,11 +5,11 @@ import time
 from automation_classes import temperature as temperature
 from automation_classes import powertail as powertail
 
-target_temp = 98.6
+target_temp = 160
 interval = 60  # seconds
 
 
-temp = temperature.Temperature(target_temp, interval)
+temp = temperature.Temperature(target_temp, interval, 'first 2019 pickle')
 power = powertail.PowerTail('BCM', 23, False)
 
 

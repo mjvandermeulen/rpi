@@ -7,6 +7,7 @@ from time import time  # for x axis plotting
 import matplotlib.pyplot as plt
 
 import automation_classes.temperature_reader as temperature_reader
+import automation_classes.temperature_file_writer as temperature_file_writer
 
 
 class Temperature (object):
@@ -39,21 +40,10 @@ class Temperature (object):
     plot()
         plots the list data.
 
-    write_to_csv_file(filename = "temperature")
-        writes to "[temperature] [timestamp].csv"
-        e.g.: "temperature 2019 01 21 18:27.csv"
-        creates this file if it does not exist.
-        writes the following columns:
-        HEADER?
-        - temperature in fahrenheit
-        - throttle
-        - p proportion(al)
-        - i integral
-        - d derivative
     """
 
-    def __init__(self, target_temp, interval):  # TODO: refactor to allow for celsius
-        """ 
+    def __init__(self, target_temp, interval, filename):  # TODO: refactor to allow for celsius
+        """
         initializes temperature object.
         NOTE: does not need the filename, this needs to be given everytime the write() method is called.
 
@@ -70,12 +60,17 @@ class Temperature (object):
         self.target_temp = target_temp
         self.interval = interval
 
+        self.filename = filename
+        self._writer = temperature_file_writer.TemperatureFileWriter(
+            self.filename)
+
         # same as self._t_list[-1] but not redundant, since it's a public attribute and the list is not
         self.current_temp = 1000
         self.throttle = -1
 
         # current data
-        self._integral = 0
+        self._integral = 0.0
+        self._differential = 0.0
 
         # past (and current) data
         self._reading_count_list = []
@@ -88,6 +83,18 @@ class Temperature (object):
         # plotting
         plt.ion()  # interactive on
         self._fig, self._ax = plt.subplots()
+
+    def _write_to_file(self):
+        reading_data = {
+            'time_stamp': self._time_list[-1],
+            'temp_stamp': self._t_list[-1],
+            'throttle': float(self.throttle),
+            'target_temp': float(self.target_temp),
+            # error can be deduced
+            'integral': float(self._integral),
+            'differential': float(self._differential)
+        }
+        self._writer.write_temperature_reading(reading_data)
 
     def plot(self):
         """
@@ -124,10 +131,11 @@ class Temperature (object):
             self._integral = min_integral
         return self._integral
 
-    def _calculate_diff(self):
+    def _update_differential(self):
         """
         average of diff with last reading (weighs double)
         and the diff with the reading before that.
+        stored in self._differential (for writing later)
 
         Returns
         -------
@@ -143,19 +151,20 @@ class Temperature (object):
         diff_prev_temp = t - self._t_list[-2]
         diff_prev_prev_temp = (t - self._t_list[-3]) / 2
         # give diff_prev_temp twice the weight
-        return (
+        self._differential = (
             (
                 2 * diff_prev_temp
                 + diff_prev_prev_temp
             ) / 3
         )
+        return self._differential
 
     def _calculate_throttle(self):
 
         # TODO: move to init or even better: to temp_control_settings.py
         k_p = 0.5
         k_i = 0.01
-        k_d = 2
+        k_d = 2.0
 
         # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)
         min_i = -1 / k_i
@@ -164,7 +173,8 @@ class Temperature (object):
         error = self.current_temp - self.target_temp
         self._update_integral(error, min_i, max_i)
         i = self._integral
-        d = self._calculate_diff()
+        self._update_differential()
+        d = self._differential
 
         print("error: {:12.8}".format(error))
         print("i:     {:12.8}".format(i))
@@ -191,6 +201,7 @@ class Temperature (object):
         t = self._temp_reader.read_temp_f()
         self.current_temp = t
         self._t_list.append(t)
-        self._time_list.append(time())  # not used yet... jan 23 2019
+        self._time_list.append(time())
         self.throttle = self._calculate_throttle()
+        self._write_to_file()
         return t
