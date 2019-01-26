@@ -5,7 +5,7 @@ import time
 from automation_classes import temperature as temperature
 from automation_classes import powertail as powertail
 
-target_temp = 200
+target_temp = 100
 interval = 60  # seconds
 
 

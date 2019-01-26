@@ -124,7 +124,8 @@ class Temperature (object):
         plt.show()
 
     def _update_integral(self, error, min_integral, max_integral):
-        self._integral += error
+        # measured in (F * sec): accumulation of error (F) over time (seconds)
+        self._integral += error * self.interval
         if self._integral > max_integral:
             self._integral = max_integral
         if self._integral < min_integral:
@@ -133,42 +134,49 @@ class Temperature (object):
 
     def _update_differential(self):
         """
-        average of diff with last reading (weighs double)
-        and the diff with the reading before that.
-        stored in self._differential (for writing later)
-
+        for crockpot:
+            average of diff with 2 minutes ago 4 minutes ago
+            in Fahrenheit/ second.
         Returns
         -------
         float
             The differential
         """
 
-        n = len(self._t_list)
-        if n < 3:
-            return 0.0
-
         t = self._t_list[-1]
-        diff_prev_temp = t - self._t_list[-2]
-        diff_prev_prev_temp = (t - self._t_list[-3]) / 2
-        # give diff_prev_temp twice the weight
+        # -1 is last reading
+        # calculates steps back for 2 (#hardcoded) minutes:
+        step1 = max(round(120 / self.interval), 1)
+        # better than step2 = 2 * step1
+        step2 = max(round(120 * 2 / self.interval), 1)
+
+        n = len(self._t_list)
+        if n < (step1 + 1):
+            return 0.0
+        elif n < (step2 + 1):
+            step2 = step1
+
+        diff_step1 = ((t - self._t_list[-1 - step1])
+                      / (step1 * self.interval))
+        diff_step2 = ((t - self._t_list[-1 - step2])
+                      / (step2 * self.interval))
         self._differential = (
-            (
-                2 * diff_prev_temp
-                + diff_prev_prev_temp
-            ) / 3
-        )
+            diff_step1 + diff_step2
+        ) / 2
         return self._differential
 
     def _calculate_throttle(self):
 
         # TODO: move to init or even better: to temp_control_settings.py
         k_p = 0.5
-        k_i = 0.05
-        k_d = 2.0
+        # integral is error (in F) times time (s). OLD: 0.05 -> 0.0008333333 say 0.0008
+        k_i = 0.0008
+        # differential is measured in Fahrenheit per second (F/s, like velocity in distance over time graph)
+        k_d = 120
 
         # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)
         min_i = -1 / k_i
-        max_i = 1 / k_i  # TODO: think about this value
+        max_i = 1 / k_i  # TODO: think about this value. This only needs to be this high if you cook something just above room temp :) Kombucha?
         # !!! A negative error means current_temp < target_temp
         error = self.current_temp - self.target_temp
         self._update_integral(error, min_i, max_i)
