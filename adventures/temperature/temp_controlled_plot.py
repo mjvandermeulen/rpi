@@ -5,11 +5,11 @@ import time
 from automation_classes import temperature as temperature
 from automation_classes import powertail as powertail
 
-target_temp = 160
+target_temp = 200
 interval = 60  # seconds
 
 
-temp = temperature.Temperature(target_temp, interval, 'first 2019 pickle')
+temp = temperature.Temperature(target_temp, interval, '180cbd')
 power = powertail.PowerTail('BCM', 23, False)
 
 
@@ -38,7 +38,7 @@ try:
         print("throttle: {:7.5f}".format(throttle))
         print(
             "The current temperature is {:5.4f} degrees Fahrenheit.".format(t))
-        temp.plot()
+        # temp.plot()
 
         # power control
         run_throttled_power_interval(power, throttle, interval)

@@ -81,8 +81,8 @@ class Temperature (object):
         # self._d_list = []
 
         # plotting
-        plt.ion()  # interactive on
-        self._fig, self._ax = plt.subplots()
+        # plt.ion()  # interactive on
+        # self._fig, self._ax = plt.subplots()
 
     def _write_to_file(self):
         reading_data = {
@@ -163,7 +163,7 @@ class Temperature (object):
 
         # TODO: move to init or even better: to temp_control_settings.py
         k_p = 0.5
-        k_i = 0.01
+        k_i = 0.05
         k_d = 2.0
 
         # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)

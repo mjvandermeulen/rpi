@@ -35,17 +35,19 @@ else:  # if no exceptions:
                 for data in generator_of_dicts:
                     temp_stamp.append(data["temp_stamp"])
                     x_time.append(data["time_stamp"] / 3600.0)
-                    integral.append(data["integral"] + data["target_temp"])
+                    integral.append(data["integral"] / 2
+                                    + data["target_temp"])
                     differential.append(
-                        data["differential"] + data["target_temp"])
+                        data["differential"] * 10 + data["target_temp"])
                     target_temp.append(data["target_temp"])
                     throttle.append(data["throttle"] * 10
                                     + data["target_temp"])
                 # pylint:disable=all
                 plt.plot(x_time, temp_stamp, 'b', label="temp in F")
-                plt.plot(x_time, integral, 'y', label='Integral', marker='o')
-                plt.plot(x_time, differential, 'r', label='Differential')
-                plt.plot(x_time, target_temp, 'b', label='Target Temp')
+                # , marker='o')
+                plt.plot(x_time, integral, 'y', label='Integral')
+                plt.plot(x_time, differential, 'k', label='Differential')
+                plt.plot(x_time, target_temp, 'k', label='Target Temp')
                 plt.plot(x_time, throttle, 'r', label='Throttle')
                 plt.legend()
                 plt.show(block=True)
