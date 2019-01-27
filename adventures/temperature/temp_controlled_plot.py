@@ -5,11 +5,11 @@ import time
 from automation_classes import temperature as temperature
 from automation_classes import powertail as powertail
 
-target_temp = 100
-interval = 180  # seconds
+target_temp = 180
+interval = 60  # seconds
 
 # TODO ##### move to args
-temp = temperature.Temperature(target_temp, interval, '100-interval-180-test')
+temp = temperature.Temperature(target_temp, interval, 'cbd-real')
 power = powertail.PowerTail('BCM', 23, False)
 
 
