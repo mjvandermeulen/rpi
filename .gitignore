@@ -7,6 +7,8 @@
 # Editors
 .vscode
 
+# data from temperature readings
+*.pickle
 # END mjvandermeulen
 
 # Byte-compiled / optimized / DLL files
