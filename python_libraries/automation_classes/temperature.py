@@ -135,8 +135,13 @@ class Temperature (object):
     def _update_differential(self):
         """
         for crockpot:
-            average of diff with 2 minutes ago 4 minutes ago
+            average of diff
+            OF THE ERROR !!!
+            with 2 minutes ago 4 minutes ago
             in Fahrenheit/ second.
+
+            NOTE: the error is not recorded, so we're using the NEGATIVE diff of the temperature
+
         Returns
         -------
         float
@@ -156,10 +161,16 @@ class Temperature (object):
         elif n < (step2 + 1):
             step2 = step1
 
-        diff_step1 = ((t - self._t_list[-1 - step1])
-                      / (step1 * self.interval))
-        diff_step2 = ((t - self._t_list[-1 - step2])
-                      / (step2 * self.interval))
+        # the differential of the ERROR is the OPPOSITE (negation) of the differential of the temperature:
+        diff_step1 = -(
+            (t - self._t_list[-1 - step1])
+            / (step1 * self.interval)
+        )
+        diff_step2 = -(
+            (t - self._t_list[-1 - step2])
+            / (step2 * self.interval)
+        )
+
         self._differential = (
             diff_step1 + diff_step2
         ) / 2
@@ -174,11 +185,15 @@ class Temperature (object):
         # differential is measured in Fahrenheit per second (F/s, like velocity in distance over time graph)
         k_d = 120
 
-        # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)
+        # TODO: think about this value. This only needs to be this high if you cook something just above room temp :) Kombucha?
         min_i = -1 / k_i
-        max_i = 1 / k_i  # TODO: think about this value. This only needs to be this high if you cook something just above room temp :) Kombucha?
-        # !!! A negative error means current_temp < target_temp
-        error = self.current_temp - self.target_temp
+
+        # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)
+        max_i = 1 / k_i
+
+        # the error is positive if the current temperature is below the target temperature.
+        # THE ERROR IS THE DEGREES TO GO UP TO THE TARGET TEMPERATURE.
+        error = self.target_temp - self.current_temp
         self._update_integral(error, min_i, max_i)
         i = self._integral
         self._update_differential()
@@ -190,11 +205,14 @@ class Temperature (object):
 
         print()
 
-        p_part = k_p * -error
+        # the bigger the error the more throttle
+        p_part = k_p * error
         print("p_part:  {:12.8}".format(p_part))
-        i_part = k_i * -i
+        # the bigger the buildup of errors over time the more throttle
+        i_part = k_i * i
         print("i_part:  {:12.8}".format(i_part))
-        d_part = k_d * -d
+        # the more the error increases the more throttle
+        d_part = k_d * d
         print("d_part:  {:12.8}".format(d_part))
 
         pid = p_part + i_part + d_part
