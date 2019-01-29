@@ -137,7 +137,7 @@ class Temperature (object):
         for crockpot:
             average of diff
             OF THE ERROR !!!
-            with 2 minutes ago 4 minutes ago
+            with 1 minutes ago (#hardcoded)
             in Fahrenheit/ second.
 
             NOTE: the error is not recorded, so we're using the NEGATIVE diff of the temperature
@@ -150,30 +150,19 @@ class Temperature (object):
 
         t = self._t_list[-1]
         # -1 is last reading
-        # calculates steps back for 2 (#hardcoded) minutes:
-        step1 = max(round(120 / self.interval), 1)
-        # better than step2 = 2 * step1
-        step2 = max(round(120 * 2 / self.interval), 1)
+        # calculates how many readings to go back for 1 (#hardcoded) minutes:
+        readings_back = max(round(60 / self.interval), 1)
 
         n = len(self._t_list)
-        if n < (step1 + 1):
+        if n < (readings_back + 1):
             return 0.0
-        elif n < (step2 + 1):
-            step2 = step1
 
         # the differential of the ERROR is the OPPOSITE (negation) of the differential of the temperature:
-        diff_step1 = -(
-            (t - self._t_list[-1 - step1])
-            / (step1 * self.interval)
-        )
-        diff_step2 = -(
-            (t - self._t_list[-1 - step2])
-            / (step2 * self.interval)
+        self._differential = -(
+            (t - self._t_list[-1 - readings_back])
+            / (readings_back * self.interval)
         )
 
-        self._differential = (
-            diff_step1 + diff_step2
-        ) / 2
         return self._differential
 
     def _calculate_throttle(self):
