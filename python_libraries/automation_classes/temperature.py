@@ -181,9 +181,9 @@ class Temperature (object):
         # TODO: move to init or even better: to temp_control_settings.py
         k_p = 0.5
         # integral is error (in F) times time (s). OLD: 0.05 -> 0.0008333333 say 0.0008
-        k_i = 0.0008
+        k_i = 0.0005  # seems like a good value, not tested yet Jan 28.
         # differential is measured in Fahrenheit per second (F/s, like velocity in distance over time graph)
-        k_d = 120
+        k_d = 100  # 120 was working. Let's try 100.
 
         # TODO: think about this value. This only needs to be this high if you cook something just above room temp :) Kombucha?
         min_i = -1 / k_i
@@ -199,29 +199,38 @@ class Temperature (object):
         self._update_differential()
         d = self._differential
 
-        print("error: {:12.8}".format(error))
-        print("i:     {:12.8}".format(i))
-        print("d:     {:12.8}".format(d))
+        print("target:  {:14.8f}".format(self.target_temp))
+        print("temp:    {:14.8f}".format(self.current_temp))
+        print()
+        print("error:   {:14.8f}".format(error))
+        print("i:       {:14.8f}".format(i))
+        print("d:       {:14.8f}".format(d))
 
         print()
 
         # the bigger the error the more throttle
         p_part = k_p * error
-        print("p_part:  {:12.8}".format(p_part))
+        # Python 3.6 (not on RPi yet):
+        # print(f"p_part:  {p_part:14.8f}") # NOTE: both 'f's
+        print("p_part:  {:14.8f}".format(p_part))
         # the bigger the buildup of errors over time the more throttle
         i_part = k_i * i
-        print("i_part:  {:12.8}".format(i_part))
+        print("i_part:  {:14.8f}".format(i_part))
         # the more the error increases the more throttle
         d_part = k_d * d
-        print("d_part:  {:12.8}".format(d_part))
+        print("d_part:  {:14.8f}".format(d_part))
 
+        print()
         pid = p_part + i_part + d_part
+        print("pid:     {:14.8f}".format(pid))
 
-        if pid < -1:
-            return -1
-        if pid > 1:
-            return 1
-        return pid
+        throttle = pid
+        if throttle < -1:
+            throttle = -1
+        if throttle > 1:
+            throttle = 1
+        print("throttle:{:14.8f}".format(throttle))
+        return throttle
 
     def read_temp_f(self):
         t = self._temp_reader.read_temp_f()

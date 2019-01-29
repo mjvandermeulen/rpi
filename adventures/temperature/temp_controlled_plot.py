@@ -9,11 +9,25 @@ target_temp = 180
 interval = 60  # seconds
 
 # TODO ##### move to args
-temp = temperature.Temperature(target_temp, interval, 'cbd-real')
+temp = temperature.Temperature(target_temp, interval, 'test-after-cbd')
 power = powertail.PowerTail('BCM', 23, False)
 
 
 def run_throttled_power_interval(power, throttle, interval):
+    """
+    move to powertail class? with min and max throttle
+
+    Parameters
+    ----------
+    power : Powertail
+        obviously would not be needed when this becomes a method of that class
+    throttle : [type]
+        [description]
+    interval : [type]
+        [description]
+
+    """
+
     # example:
     # interval = 60 seconds
     #   throttle -1: 0 seconds on 60 off
@@ -32,17 +46,19 @@ def run_throttled_power_interval(power, throttle, interval):
 
 try:
     while True:
+        print()
         print("=== start while loop in " + __file__ + " ===")
-        t = temp.read_temp_f()
+        print()
+        temp.read_temp_f()
         throttle = temp.throttle
-        print("throttle: {:7.5f}".format(throttle))
-        print(
-            "The current temperature is {:5.4f} degrees Fahrenheit.".format(t))
+
         # temp.plot()
 
         # power control
         run_throttled_power_interval(power, throttle, interval)
+        print()
         print("=== end while loop in " + __file__ + " ===")
+        print()
 
 except KeyboardInterrupt:
     print("keyboard interrupt")
