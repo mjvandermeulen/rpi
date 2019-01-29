@@ -37,9 +37,15 @@ else:  # if no exceptions:
                 differential = []
                 target_temp = []
                 throttle = []
+                first_time_stamp = 0
                 for data in generator_of_dicts:
+                    # unlikely that the first record was the first second in Jan 1 1970 (start of Unix time)
+                    if first_time_stamp == 0:
+                        first_time_stamp = data["time_stamp"]
+                    x_time.append(
+                        (data["time_stamp"] - first_time_stamp) / 3600.0)
+
                     temp_stamp.append(data["temp_stamp"])
-                    x_time.append(data["time_stamp"] / 3600.0)
                     integral.append(data["integral"] * k_i * 10
                                     + data["target_temp"])
                     # hardcoded k_d = 120
