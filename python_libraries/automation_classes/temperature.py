@@ -3,6 +3,7 @@
 import os
 import glob
 from time import time  # for x axis plotting
+import math
 
 import matplotlib.pyplot as plt
 
@@ -23,7 +24,7 @@ class Temperature (object):
     ----------
     interval: int
         time in seconds between readings (not enforced, since timing is up to the caller of the class methods)
-    current_temp: float
+    current_temp_f: float
         current (last read) temperature in Fahrenheit
     current_temp_c: float
         current (last read) temperature in Celsius
@@ -42,14 +43,15 @@ class Temperature (object):
 
     """
 
-    def __init__(self, target_temp, interval, filename):  # TODO: refactor to allow for celsius
+    # TODO: refactor to allow for celsius
+    def __init__(self, setpoint, interval=60, filename='temperature_readings'):
         """
         initializes temperature object.
         NOTE: does not need the filename, this needs to be given everytime the write() method is called.
 
         Parameters
         ----------
-        target_temp : int
+        setpoint : int
             target temperature in Fahrenheit
         interval : int, optional
             time in seconds between readings (the default is 60, which [default_description])
@@ -57,25 +59,25 @@ class Temperature (object):
         """
         self._temp_reader = temperature_reader.TemperatureReader()
 
-        self.target_temp = target_temp
-        self.interval = interval
+        self.setpoint = self._round_setpoint_to_possible_reading(setpoint)
+        self.interval = max(interval, 30)  # at least 30 seconds for now.
 
         self.filename = filename
         self._writer = temperature_file_writer.TemperatureFileWriter(
             self.filename)
 
-        # same as self._t_list[-1] but not redundant, since it's a public attribute and the list is not
-        self.current_temp = 1000
+        # same as self._temp_f_list[-1] but not redundant, since it's a public attribute and the list is not
+        self.current_temp_f = 1000
         self.throttle = -1
 
         # current data
-        self._integral = 0.0
+        self._integral = 1100.0  # ***** ##### TEMP
         self._differential = 0.0
 
         # past (and current) data
         self._reading_count_list = []
         self._time_list = []
-        self._t_list = []
+        self._temp_f_list = []
         # self._p_list = []
         # self._i_list = []
         # self._d_list = []
@@ -84,12 +86,37 @@ class Temperature (object):
         # plt.ion()  # interactive on
         # self._fig, self._ax = plt.subplots()
 
+    def _round_setpoint_to_possible_reading(self, setpoint):
+        """
+        cute function to make the setpoint match a possible reading from the temperature probe
+        This way the temperature can reach the setpoint exactly and fluctuate around it.
+
+        Parameters
+        ----------
+        setpoint : float
+            the given setpoint, when initializing the object
+
+        Returns
+        -------
+        float
+            the setpoint rounded to the nearest possible reading from the probe.
+        """
+
+        sp = (setpoint - 32) * 5.0 / 9.0  # to Celsius
+        sp = round(sp * 16)  # readings are in 16th of a degree Celsius
+        # readings are whole numbers / 1000, so precision of 3 decimals.
+        # The temp probe readings in celsius are rounded down!
+        sp = math.floor(sp / 16.0 * 1000) / 1000
+        sp = sp * 9.0 / 5.0 + 32
+        return sp
+
     def _write_to_file(self):
         reading_data = {
             'time_stamp': self._time_list[-1],
-            'temp_stamp': self._t_list[-1],
+            'temp_f': self.current_temp_f,
+            'temp_c': self.current_temp_c,
             'throttle': float(self.throttle),
-            'target_temp': float(self.target_temp),
+            'setpoint': float(self.setpoint),
             # error can be deduced
             'integral': float(self._integral),
             'differential': float(self._differential)
@@ -98,16 +125,17 @@ class Temperature (object):
 
     def plot(self):
         """
-        plot the current data (not data from a file)
+            This has become obsolete, as I'm only plotting from file now.
+            This is kept here to show live plotting, according to new methods (see links) Initially this was taken from a Pi project, but that no longer works.
         """
         # https://github.com/matplotlib/matplotlib/issues/7759#issuecomment-271110279
         # as well: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html
 
         # pylint: disable=no-member
-        # x_list = [i for i in range(len(self._t_list))] # list comprehesion
-        x_list = list(range(len(self._t_list)))
+        # x_list = [i for i in range(len(self._temp_f_list))] # list comprehesion
+        x_list = list(range(len(self._temp_f_list)))
 
-        self._ax.plot(x_list, self._t_list)
+        self._ax.plot(x_list, self._temp_f_list)
         self._fig.canvas.flush_events()
         plt.draw()
         # pylint: enable=no-member
@@ -148,18 +176,18 @@ class Temperature (object):
             The differential
         """
 
-        t = self._t_list[-1]
+        t = self._temp_f_list[-1]
         # -1 is last reading
         # calculates how many readings to go back for 1 (#hardcoded) minutes:
         readings_back = max(round(60 / self.interval), 1)
 
-        n = len(self._t_list)
+        n = len(self._temp_f_list)
         if n < (readings_back + 1):
             return 0.0
 
         # the differential of the ERROR is the OPPOSITE (negation) of the differential of the temperature:
         self._differential = -(
-            (t - self._t_list[-1 - readings_back])
+            (t - self._temp_f_list[-1 - readings_back])
             / (readings_back * self.interval)
         )
 
@@ -169,10 +197,14 @@ class Temperature (object):
 
         # TODO: move to init or even better: to temp_control_settings.py
         k_p = 0.5
+
         # integral is error (in F) times time (s). OLD: 0.05 -> 0.0008333333 say 0.0008
-        k_i = 0.0005  # seems like a good value, not tested yet Jan 28.
+        # seems like a good value, not tested yet Jan 28. 0.0005 TEsted and working great. Slight fluctuation, but in bounds.
+        k_i = 0.0005
+
         # differential is measured in Fahrenheit per second (F/s, like velocity in distance over time graph)
-        k_d = 100  # 120 was working. Let's try 100.
+        # 120 was working. Now 100, but since only measure one minute back, this is a little much. (still working wonderfully though)
+        k_d = 60
 
         # TODO: think about this value. This only needs to be this high if you cook something just above room temp :) Kombucha?
         min_i = -1 / k_i
@@ -182,14 +214,15 @@ class Temperature (object):
 
         # the error is positive if the current temperature is below the target temperature.
         # THE ERROR IS THE DEGREES TO GO UP TO THE TARGET TEMPERATURE.
-        error = self.target_temp - self.current_temp
+        error = self.setpoint - self.current_temp_f
         self._update_integral(error, min_i, max_i)
         i = self._integral
         self._update_differential()
         d = self._differential
 
-        print("target:  {:14.8f}".format(self.target_temp))
-        print("temp:    {:14.8f}".format(self.current_temp))
+        print("target:  {:14.8f}".format(self.setpoint))
+        print("temp f:  {:14.8f}".format(self.current_temp_f))
+        print("temp c:  {:14.8f}".format(self.current_temp_c))
         print()
         print("error:   {:14.8f}".format(error))
         print("i:       {:14.8f}".format(i))
@@ -222,10 +255,10 @@ class Temperature (object):
         return throttle
 
     def read_temp_f(self):
-        t = self._temp_reader.read_temp_f()
-        self.current_temp = t
-        self._t_list.append(t)
+        self.current_temp_c = self._temp_reader.read_temp_c()
+        self.current_temp_f = self.current_temp_c * 9.0 / 5.0 + 32
+        self._temp_f_list.append(self.current_temp_f)
         self._time_list.append(time())
         self.throttle = self._calculate_throttle()
         self._write_to_file()
-        return t
+        return self.current_temp_f
