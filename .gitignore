@@ -1,5 +1,8 @@
 # copied from https://github.com/github/gitignore/blob/master/Python.gitignore
 
+# Project specific
+personal_settings.py
+
 # mjvandermeulen
 # When remotely working from Mac
 .AppleDouble/
