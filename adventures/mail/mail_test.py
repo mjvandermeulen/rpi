@@ -1,4 +1,4 @@
-#!usr/local/bin/env python3
+#!/usr/local/bin/env python3
 
 from automation_modules import automation_email
 
