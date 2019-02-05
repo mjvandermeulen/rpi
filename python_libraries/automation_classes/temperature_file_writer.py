@@ -29,7 +29,7 @@ class TemperatureFileWriter(object):
             "%Y-%m-%d_%H-%M", time.localtime(ts))
         # example output: '2019 02 03 13:33'
 
-        self.filename = string_time + '_' + filename + '.pickle'
+        self.filename = filename + '_' + string_time + '.pickle'
 
         self._write_mode = 'wb'
 

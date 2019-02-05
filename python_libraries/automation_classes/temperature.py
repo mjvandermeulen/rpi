@@ -2,107 +2,86 @@
 
 import os
 import glob
-from time import time  # for x axis plotting
+import time
 import math
-
 import matplotlib.pyplot as plt
 
-import automation_classes.temperature_reader as temperature_reader
-import automation_classes.temperature_file_writer as temperature_file_writer
+from automation_classes import temperature_file_writer
+from automation_modules import automation_email  # OBSOLETE SOON
+from automation_modules import temperature_file_tools
 
 
 class Temperature (object):
     """
-    This class:
-    - FOR NOW ALL IN FAHRENHEIT. otherwise it'll get messed up.
-    - reads the temperature
-    - remembers the previously read temperatures in a list.
-    - calculates the throttle needed to reach set temperature (from -1 to 1)
-    - has a method for plotting.
-
-    Attributes
-    ----------
-    interval: int
-        time in seconds between readings (not enforced, since timing is up to the caller of the class methods)
-    current_temp_f: float
-        current (last read) temperature in Fahrenheit
-    current_temp_c: float
-        current (last read) temperature in Celsius
-    throttle: float
-        throttle needed to reach the set temperature from -1 to 1
-
-    Methods
-    -------
-    read_temp_f(): float
-        reads the temperature and stores this data.
-        Triggers recalculation of the throttle.
-        returns the read temperature
-
-    plot()
-        plots the list data.
-
     """
+# TODO: change name to TemperatureController
+# TODO: rename: profile (List) to profile_stages
+# TODO: refactor to allow for celsius
+# TODO: add 'generic'    def __init__(self, profile='generic', plot_file='temperature_readings'):
 
-    # TODO: refactor to allow for celsius
-    def __init__(self, setpoint, interval=60, filename='temperature_readings'):
-        """
-        initializes temperature object.
-        NOTE: does not need the filename, this needs to be given everytime the write() method is called.
-
-        Parameters
-        ----------
-        setpoint : int
-            target temperature in Fahrenheit
-        interval : int, optional
-            time in seconds between readings (the default is 60, which [default_description])
-
-        """
-        self._temp_reader = temperature_reader.TemperatureReader()
-
-        self.setpoint = self._round_setpoint_to_possible_reading(setpoint)
-        self.interval = max(interval, 30)  # at least 30 seconds for now.
-
-        self.filename = filename
+    def __init__(self, profile_name, appliance='crockpot', plot_file='temperature_readings'):
+        self.plot_file = plot_file
         self._writer = temperature_file_writer.TemperatureFileWriter(
-            self.filename)
+            self.plot_file)
 
-        # same as self._temp_f_list[-1] but not redundant, since it's a public attribute and the list is not
-        self.current_temp_f = 1000
-        self.throttle = -1
+        self.setpoint_f = -1000
+        self._k_p = 0
+        self._k_i = 0
+        self._k_d = 0
+        self._min_i = 0
+        self._max_i = 0
+        self._d_x = 0
+        self.min_throttle = 0
+        self.max_throttle = 0
+        self.interval = 3600
+        self.min_switch_time = 5
 
         # current data
-        self._integral = 1100.0  # ***** ##### TEMP
+        # same as self._temp_f_list[-1] but not redundant, since it's a public attribute and the list is not
+        self.current_temp_f = 1000
+        self._integral = 0.0
         self._differential = 0.0
+        self.control_function_value = 0.0
 
         # past (and current) data
-        self._reading_count_list = []
         self._time_list = []
         self._temp_f_list = []
-        # self._p_list = []
-        # self._i_list = []
-        # self._d_list = []
 
         # plotting
         # plt.ion()  # interactive on
         # self._fig, self._ax = plt.subplots()
 
-    def _round_setpoint_to_possible_reading(self, setpoint):
+    def set_profile_stage_params(self, profile_stage):
+        self.setpoint_f = float(profile_stage["setpoint_f"])
+        self._k_p = float(profile_stage["k_p"])
+        self._k_i = float(profile_stage["k_i"])
+        self._k_d = float(profile_stage["k_d"])
+        self._min_i = float(profile_stage["min_i"])
+        self._max_i = float(profile_stage["max_i"])
+        self._d_x = int(profile_stage["d_x"])
+        self.min_throttle = float(profile_stage["min_throttle"])
+        self.max_throttle = float(profile_stage["max_throttle"])
+        self.interval = int(profile_stage["interval"])
+        self.min_switch_time = int(profile_stage["min_switch_time"])
+
+    def _round_setpoint_to_possible_reading(self, setpoint_f):
         """
-        cute function to make the setpoint match a possible reading from the temperature probe
-        This way the temperature can reach the setpoint exactly and fluctuate around it.
+        MAKE OBSOLETE: This method is too much tied into the temperature probe, or move to probe reader (give that probe reader a more specific name, with name of the probe (TCB 30 or someting like that))
+        cute function to make the setpoint_f match a possible reading from the temperature probe
+        This way the temperature can reach the setpoint_f exactly and fluctuate around it.
 
         Parameters
         ----------
-        setpoint : float
-            the given setpoint, when initializing the object
+        setpoint_f : float
+            the given setpoint_f, when initializing the object
 
         Returns
         -------
         float
-            the setpoint rounded to the nearest possible reading from the probe.
+            the setpoint_f rounded to the nearest possible reading from the probe.
         """
 
-        sp = (setpoint - 32) * 5.0 / 9.0  # to Celsius
+        sp = (setpoint_f - 32) * 5.0 / 9.0  # to Celsius
         sp = round(sp * 16)  # readings are in 16th of a degree Celsius
         # readings are whole numbers / 1000, so precision of 3 decimals.
         # The temp probe readings in celsius are rounded down!
@@ -115,41 +94,14 @@ class Temperature (object):
             'time_stamp': self._time_list[-1],
             'temp_f': self.current_temp_f,
             'temp_c': self.current_temp_c,
-            'throttle': float(self.throttle),
-            'setpoint': float(self.setpoint),
+            'throttle': float(self.throttle(self.min_switch_time, self.max_throttle)),
+            # important, since setpoint_f can change!
+            'setpoint_f': float(self.setpoint_f),
             # error can be deduced
             'integral': float(self._integral),
             'differential': float(self._differential)
         }
         self._writer.write_temperature_reading(reading_data)
-
-    def plot(self):
-        """
-            This has become obsolete, as I'm only plotting from file now.
-            This is kept here to show live plotting, according to new methods (see links) Initially this was taken from a Pi project, but that no longer works.
-        """
-        # https://github.com/matplotlib/matplotlib/issues/7759#issuecomment-271110279
-        # as well: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html
-
-        # pylint: disable=no-member
-        # x_list = [i for i in range(len(self._temp_f_list))] # list comprehesion
-        x_list = list(range(len(self._temp_f_list)))
-
-        self._ax.plot(x_list, self._temp_f_list)
-        self._fig.canvas.flush_events()
-        plt.draw()
-        # pylint: enable=no-member
-
-    def detach_plot(self):
-        """
-        call this method after keyboard interrupt
-        in order to:
-        - preserve the plot (otherwise the program would end and the plot would disappear)
-        - halt the program, until the plot window is closed
-        """
-
-        plt.ioff()
-        plt.show()
 
     def _update_integral(self, error, min_integral, max_integral):
         # measured in (F * sec): accumulation of error (F) over time (seconds)
@@ -193,34 +145,19 @@ class Temperature (object):
 
         return self._differential
 
-    def _calculate_throttle(self):
+    def _calculate_control_function(self):
 
-        # TODO: move to init or even better: to temp_control_settings.py
-        k_p = 0.5
-
-        # integral is error (in F) times time (s). OLD: 0.05 -> 0.0008333333 say 0.0008
-        # seems like a good value, not tested yet Jan 28. 0.0005 TEsted and working great. Slight fluctuation, but in bounds.
-        k_i = 0.0005
-
-        # differential is measured in Fahrenheit per second (F/s, like velocity in distance over time graph)
-        # 120 was working. Now 100, but since only measure one minute back, this is a little much. (still working wonderfully though)
-        k_d = 60
-
-        # TODO: think about this value. This only needs to be this high if you cook something just above room temp :) Kombucha?
-        min_i = -1 / k_i
-
-        # (full throttle, at level (d == 0) target temperature (p == 0). Tinkering possible here.)
-        max_i = 1 / k_i
+        # see https://en.wikipedia.org/wiki/PID_controller#Loop_tuning
 
         # the error is positive if the current temperature is below the target temperature.
         # THE ERROR IS THE DEGREES TO GO UP TO THE TARGET TEMPERATURE.
-        error = self.setpoint - self.current_temp_f
-        self._update_integral(error, min_i, max_i)
+        error = self.setpoint_f - self.current_temp_f
+        self._update_integral(error, self._min_i, self._max_i)
         i = self._integral
         self._update_differential()
         d = self._differential
 
-        print("target:  {:14.8f}".format(self.setpoint))
+        print("target:  {:14.8f}".format(self.setpoint_f))
         print("temp f:  {:14.8f}".format(self.current_temp_f))
         print("temp c:  {:14.8f}".format(self.current_temp_c))
         print()
@@ -231,34 +168,68 @@ class Temperature (object):
         print()
 
         # the bigger the error the more throttle
-        p_part = k_p * error
+        p_part = self._k_p * error
         # Python 3.6 (not on RPi yet):
         # print(f"p_part:  {p_part:14.8f}") # NOTE: both 'f's
         print("p_part:  {:14.8f}".format(p_part))
         # the bigger the buildup of errors over time the more throttle
-        i_part = k_i * i
+        i_part = self._k_i * i
         print("i_part:  {:14.8f}".format(i_part))
         # the more the error increases the more throttle
-        d_part = k_d * d
+        d_part = self._k_d * d
         print("d_part:  {:14.8f}".format(d_part))
 
         print()
-        pid = p_part + i_part + d_part
-        print("pid:     {:14.8f}".format(pid))
+        # control function: u
+        u = p_part + i_part + d_part
+        print("u:     {:14.8f}".format(u))
+        return u
 
-        throttle = pid
-        if throttle < -1:
-            throttle = -1
-        if throttle > 1:
-            throttle = 1
-        print("throttle:{:14.8f}".format(throttle))
-        return throttle
+    def throttle(self, min_throttle, max_throttle):
+        u = self.control_function_value
+        if u < min_throttle:
+            return min_throttle
+        if u > max_throttle:
+            return max_throttle
+        return u
 
-    def read_temp_f(self):
-        self.current_temp_c = self._temp_reader.read_temp_c()
-        self.current_temp_f = self.current_temp_c * 9.0 / 5.0 + 32
+    def process_f_measurement(self, temp_f):
+        self.current_temp_f = temp_f
+        self.current_temp_c = (temp_f - 32) * 5 / 9
         self._temp_f_list.append(self.current_temp_f)
-        self._time_list.append(time())
-        self.throttle = self._calculate_throttle()
+        # ONLY Last value needed (like e.g.: current_temp_c_). NO LIST NEEDED
+        self._time_list.append(time.time())
+        self.control_function_value = self._calculate_control_function()
         self._write_to_file()
-        return self.current_temp_f
+        return self.control_function_value
+
+    def plot(self):
+        """
+            This has become obsolete, as I'm only plotting from file now.
+            This is kept here to show live plotting, according to new methods (see links) Initially this was taken from a Pi project, but that no longer works.
+        """
+        # https://github.com/matplotlib/matplotlib/issues/7759#issuecomment-271110279
+        # as well: https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html
+
+        # pylint: disable=no-member
+        # x_list = [i for i in range(len(self._temp_f_list))] # list comprehesion
+        x_list = list(range(len(self._temp_f_list)))
+
+        self._ax.plot(x_list, self._temp_f_list)
+        self._fig.canvas.flush_events()
+        plt.draw()
+        # pylint: enable=no-member
+
+    def detach_plot(self):
+        """
+        This has become obsolete, as I'm only plotting from file now.
+        This is kept here to show live plotting, according to new methods (see links) Initially this was taken from a Pi project, but that no longer works.
+
+        call this method after keyboard interrupt
+        in order to:
+        - preserve the plot (otherwise the program would end and the plot would disappear)
+        - halt the program, until the plot window is closed
+        """
+
+        plt.ioff()
+        plt.show()

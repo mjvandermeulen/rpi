@@ -35,7 +35,7 @@ else:  # if no exceptions:
                 error = []
                 integral = []
                 differential = []
-                setpoint = []
+                setpoint_f = []
                 throttle = []
                 first_time_stamp = 0
                 for data in generator_of_dicts:
@@ -47,22 +47,22 @@ else:  # if no exceptions:
 
                     temp_f.append(data["temp_f"])
                     integral.append(data["integral"] * k_i * 10
-                                    + data["setpoint"])
+                                    + data["setpoint_f"])
                     # hardcoded k_d = 120
                     differential.append(data["differential"] * 120 * 10
-                                        + data["setpoint"])
-                    setpoint.append(data["setpoint"])
-                    error.append(data["setpoint"] - data["temp_f"]
-                                 + data["setpoint"])
+                                        + data["setpoint_f"])
+                    setpoint_f.append(data["setpoint_f"])
+                    error.append(data["setpoint_f"] - data["temp_f"]
+                                 + data["setpoint_f"])
                     throttle.append(data["throttle"] * 10
-                                    + data["setpoint"])
+                                    + data["setpoint_f"])
                 # pylint:disable=all
                 plt.plot(x_time, temp_f, 'b', label="temp in F")
                 # , marker='o')
                 plt.plot(x_time, error, 'r', label='Error', linestyle='--')
                 plt.plot(x_time, integral, 'y', label='Integral')
                 plt.plot(x_time, differential, 'k', label='Differential')
-                plt.plot(x_time, setpoint, 'k', label='Target Temp')
+                plt.plot(x_time, setpoint_f, 'k', label='Target Temp')
                 plt.plot(x_time, throttle, 'g', label='Throttle')
                 plt.legend()
                 plt.show(block=True)
