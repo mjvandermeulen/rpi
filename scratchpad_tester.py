@@ -1,12 +1,13 @@
 #!/usr/local/bin env python3
 
-r = {
-    "name": "honey",
-    "setpoint": "180",
-}
+# import csv
+# r = {
+#     "name": "honey",
+#     "setpoint": "180",
+# }
 
-if r["name"] in ["cbd", ""]:
-    print("bingo")
+# if r["name"] in ["cbd", ""]:
+#     print("bingo")
 
 # my_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 # for index, value in enumerate(my_list):
@@ -19,23 +20,24 @@ if r["name"] in ["cbd", ""]:
 # r = 3.4
 # print(f"{r:3.10f}")
 
-
-# import csv
-# with open('./csv_automation_settings/temperature_profiles.csv') as profile_file:
-#     csv_reader = csv.reader(profile_file, delimiter=',')
-#     line_count = 0
-#     profiles = []
-#     for row in csv_reader:
-#         if line_count == 0:
-#             print(f'Column names are {", ".join(row)}')
-#         else:
-#             profiles.append({})
-#             for cell in row:
-#                 print("cell: {}".format(cell))
-#                 profiles[-1][cell] = cell
-#         line_count += 1
-#     print(f'Processed {line_count} lines.')
-#     print(profiles)
+import csv
+with open('./csv_automation/temperature_profiles.csv', encoding='utf-8-sig') as csv_file:
+    csv_reader = csv.DictReader(csv_file)
+    line_count = 0
+    for i in range(5):
+        print('*****')
+    for row in csv_reader:
+        print(row)
+        print(row["skip"])
+        print(row["name"])
+        print('=========')
+        if True:
+            print(f'Column names are {", ".join(row)}')
+            line_count += 1
+        for key in row:
+            print("key: {} --- row[key]: {}".format(key, row[key]))
+        line_count += 1
+    print(f'Processed {line_count} lines.')
 
 # import csv
 # with open('./csv_automation_settings/temperature_profiles.csv') as csv_file:
@@ -53,19 +55,20 @@ if r["name"] in ["cbd", ""]:
 #         line_count += 1
 #     print(f'Processed {line_count} lines.')
 
-def gen():
-    print("generator 0")
-    yield 1
-    print("generator 1")
-    yield 2
-    print("generator 2")
-    yield 3
-    print("generator 3")
-    yield 4
-    print("generator 4 (Only reached at end of iteration over generator")
-    # OR:
-    #     for i in range(4):
-    #         yield i + 1
+
+# def gen():
+#     print("generator 0")
+#     yield 1
+#     print("generator 1")
+#     yield 2
+#     print("generator 2")
+#     yield 3
+#     print("generator 3")
+#     yield 4
+#     print("generator 4 (Only reached at end of iteration over generator")
+#     # OR:
+#     #     for i in range(4):
+#     #         yield i + 1
 
 
 # if you replace g with gen() in the next part,

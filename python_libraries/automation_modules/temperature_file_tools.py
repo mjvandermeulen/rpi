@@ -10,29 +10,33 @@ path_to_csv_automation = '../csv_automation'
 
 
 def read_temperature_control_data_from_file_pickle_generator(filename):
-    with open(filename, 'rb') as f:
-        while True:
-            try:
-                yield pickle.load(f)
-            except EOFError:
-                break
+    try:
+        with open(filename, 'rb') as f:
+            while True:
+                try:
+                    yield pickle.load(f)
+                except EOFError:
+                    break
+    except IOError:
+        print("file {} not found in read_temperature_control_data_from_file_pickle_generator".format(filename))
 
 
 def read_temperature_profile(filename, profile_name=generic_profile, path=path_to_csv_automation):
-    with open(path + '/' + filename) as profile_file:
+    """
+    Excel saves as UTF-8, see encoding='utf-8-sig'
+    """
+
+    with open(path + '/' + filename, encoding='utf-8-sig') as profile_file:
         csv_dict_reader = csv.DictReader(profile_file, delimiter=',')
         profile = []
         match_found = False
         for row in csv_dict_reader:
-            # for key in row:
-            #     print("key: ==={}===".format(key))
-            # if row["skip"]:  # TODO I get a key error here
-            #     continue
+            if row["skip"]:
+                continue
             if (row["name"].lower() == profile_name.lower() or
                     (match_found and row["name"] == "")):
                 match_found = True  # or remains True
-                print("bingo")
                 profile.append(row)
-            elif row["name"].lower != profile_name.lower and match_found:
+            elif match_found and (row["name"].lower() != profile_name.lower() or not row["setpoint"]):
                 break
     return profile

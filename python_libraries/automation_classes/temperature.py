@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from automation_classes import temperature_file_writer
 from automation_modules import automation_email  # OBSOLETE SOON
 from automation_modules import temperature_file_tools
+from automation_modules import automation_settings
 
 
 class Temperature (object):
@@ -19,8 +20,8 @@ class Temperature (object):
 # TODO: refactor to allow for celsius
 # TODO: add 'generic'    def __init__(self, profile='generic', plot_file='temperature_readings'):
 
-    def __init__(self, profile_name, appliance='crockpot', plot_file='temperature_readings'):
-        self.plot_file = plot_file
+    def __init__(self, plot_file='temperature_readings', appliance='crockpot'):
+        self.plot_file = automation_settings.tempcontroller_measurements_path + '/' + plot_file
         self._writer = temperature_file_writer.TemperatureFileWriter(
             self.plot_file)
 
@@ -66,6 +67,7 @@ class Temperature (object):
 
     def _round_setpoint_to_possible_reading(self, setpoint_f):
         """
+        Not used currently?
         MAKE OBSOLETE: This method is too much tied into the temperature probe, or move to probe reader (give that probe reader a more specific name, with name of the probe (TCB 30 or someting like that))
         cute function to make the setpoint_f match a possible reading from the temperature probe
         This way the temperature can reach the setpoint_f exactly and fluctuate around it.
@@ -94,7 +96,7 @@ class Temperature (object):
             'time_stamp': self._time_list[-1],
             'temp_f': self.current_temp_f,
             'temp_c': self.current_temp_c,
-            'throttle': float(self.throttle(self.min_switch_time, self.max_throttle)),
+            'throttle': float(self.throttle()),
             # important, since setpoint_f can change!
             'setpoint_f': float(self.setpoint_f),
             # error can be deduced
@@ -182,15 +184,15 @@ class Temperature (object):
         print()
         # control function: u
         u = p_part + i_part + d_part
-        print("u:     {:14.8f}".format(u))
+        print("u:       {:14.8f}".format(u))
         return u
 
-    def throttle(self, min_throttle, max_throttle):
+    def throttle(self):
         u = self.control_function_value
-        if u < min_throttle:
-            return min_throttle
-        if u > max_throttle:
-            return max_throttle
+        if u < self.min_throttle:
+            return self.min_throttle
+        if u > self.max_throttle:
+            return self.max_throttle
         return u
 
     def process_f_measurement(self, temp_f):

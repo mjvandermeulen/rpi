@@ -15,26 +15,31 @@ try:
     # TODO
     # read sys.argv
 
+    profile_name = 'test-feb'  # hardcoded
+
     # plot filename as arg (defaults to profile name) TODO
     # arg 1: profile name
     # arg 2: csv filename (add .csv if not present)
     # arg 3: cvs folder pathname (remove trailing '/')
 
     profile = temperature_file_tools.read_temperature_profile(
-        'temperature_profiles.csv', 'ricecooker_investigation')  # hardcoded file name. # hardcoded profile name
+        'temperature_profiles.csv', profile_name=profile_name)  # hardcoded file name.
     # for profile_stage in profile:
     #     for key in profile_stage:
     #         print("profile stage: profile_stage[\"{}\"] = {}".format(
     #             key, profile_stage[key]))
 
     temp_reader = temperature_reader.TemperatureReader()
-    tc = temperature.Temperature(
-        'cbd', appliance='crockpot')  # name only for plot filename.
+    tc = temperature.Temperature(plot_file=profile_name,
+                                 appliance='crockpot')  # hardcoded appliance # hardcoded profile (used for plot_file name)
 
     # init powertail
     power = powertail.PowerTail('BCM', 23, False)
 
     for profile_stage in profile:
+        print("=======================================================================")
+        print("=== start profile_stage ===============================================")
+        print("=======================================================================")
         tc.set_profile_stage_params(profile_stage)
 
         t = start_of_stage = time.time()
@@ -45,20 +50,22 @@ try:
         #         key, profile_stage[key]))
 
         while t < start_of_stage + duration:
-            print("===========================")
             print("=== start control loop  ===")
-            print("===========================")
 
             temp_f = temp_reader.read_temp_f()
 
             tc.process_f_measurement(temp_f)
 
             # CLEANUP: parameters
-            throttle = tc.throttle(tc.min_throttle, tc.max_throttle)
+            # but... needed for plotting here, so let's keep it in tc
+            # these values are needed for power.run_thr.... as well
+            # make part of power? (again?) YES
+            throttle = tc.throttle()
+            print("throttle:{:14.8f}".format(throttle))
 
             # run power interval
             power.run_throttled_power_interval(
-                power, throttle, -1, +1, tc.interval, tc.min_switch_time)
+                power, throttle, tc.min_throttle, tc.max_throttle, tc.interval, tc.min_switch_time)
             print()
             print("=== end while loop in " + __file__ + " ===")
             print()
@@ -67,8 +74,8 @@ try:
 except KeyboardInterrupt:
     power.turn_off()
 
-else:
+else:  # if no exceptions (read: if exception do yada yada, else ...)
     print('ended, no exceptions')
 
-finally:
+finally:  # always (exceptions or not)
     print('DONE ' + __file__)
