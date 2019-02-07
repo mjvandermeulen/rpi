@@ -24,10 +24,11 @@ try:
 
     profile = temperature_file_tools.read_temperature_profile(
         'temperature_profiles.csv', profile_name=profile_name)  # hardcoded file name.
-    # for profile_stage in profile:
-    #     for key in profile_stage:
-    #         print("profile stage: profile_stage[\"{}\"] = {}".format(
-    #             key, profile_stage[key]))
+    for profile_stage in profile:
+        print("profile stage setpoint: {}".format(profile_stage["setpoint_f"]))
+        # for key in profile_stage:
+        #     print("profile stage: profile_stage[\"{}\"] = {}".format(
+        #         key, profile_stage[key]))
 
     temp_reader = temperature_reader.TemperatureReader()
     tc = temperature.Temperature(plot_file=profile_name,
@@ -56,10 +57,6 @@ try:
 
             tc.process_f_measurement(temp_f)
 
-            # CLEANUP: parameters
-            # but... needed for plotting here, so let's keep it in tc
-            # these values are needed for power.run_thr.... as well
-            # make part of power? (again?) YES
             throttle = tc.throttle()
             print("throttle:{:14.8f}".format(throttle))
 
@@ -72,10 +69,14 @@ try:
             # separate notification .csv file! (warnings, errors, and hourly updates)
             t = time.time()
 except KeyboardInterrupt:
-    power.turn_off()
+    print()
+    print("KeyboardInterrupt")
+    print()
 
 else:  # if no exceptions (read: if exception do yada yada, else ...)
     print('ended, no exceptions')
 
 finally:  # always (exceptions or not)
+    print()
+    power.turn_off()
     print('DONE ' + __file__)

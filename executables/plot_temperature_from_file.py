@@ -25,11 +25,6 @@ else:  # if no exceptions:
                 print("file {} does not exist".format(data_file))
                 break
             else:
-                plt.title('Crock Pot temperatures over time (measurements')
-
-                plt.xlabel('measurements')
-                plt.ylabel('temperature in Fahrenheit mostly')
-
                 x_time = []
                 temp_f = []  # refactor to temp_f?
                 error = []
@@ -46,25 +41,39 @@ else:  # if no exceptions:
                         (data["time_stamp"] - first_time_stamp) / 3600.0)
 
                     temp_f.append(data["temp_f"])
-                    integral.append(data["integral"] * k_i * 10
-                                    + data["setpoint_f"])
+                    integral.append(data["integral"] * k_i)
                     # hardcoded k_d = 120
-                    differential.append(data["differential"] * 120 * 10
-                                        + data["setpoint_f"])
+                    differential.append(data["differential"] * 120)
                     setpoint_f.append(data["setpoint_f"])
-                    error.append(data["setpoint_f"] - data["temp_f"]
-                                 + data["setpoint_f"])
-                    throttle.append(data["throttle"] * 10
-                                    + data["setpoint_f"])
+                    e = data["setpoint_f"] - data["temp_f"]
+                    if e > 2:
+                        e = 2
+                    elif e < -2:
+                        e = -2
+                    error.append((e))
+                    throttle.append(data["throttle"])
                 # pylint:disable=all
-                plt.plot(x_time, temp_f, 'b', label="temp in F")
+                # https://matplotlib.org/gallery/subplots_axes_and_figures/subplot.html
+                f, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+                ax1.set_title('Crock Pot temperatures over time (measurements')
+
+                ax1.set_xlabel('measurements')
+                ax1.set_ylabel('temperature in Fahrenheit mostly')
+
+                ax1.plot(x_time, temp_f, 'b', label="temp in F")
                 # , marker='o')
-                plt.plot(x_time, error, 'r', label='Error', linestyle='--')
-                plt.plot(x_time, integral, 'y', label='Integral')
-                plt.plot(x_time, differential, 'k', label='Differential')
-                plt.plot(x_time, setpoint_f, 'k', label='Target Temp')
-                plt.plot(x_time, throttle, 'g', label='Throttle')
-                plt.legend()
+                ax1.plot(x_time, setpoint_f, 'k', label='Target Temp')
+                ax1.legend()
+
+                ax2.plot(x_time, error, 'r', label='Error', linestyle='--')
+                ax2.plot(x_time, integral, 'y', label='Integral')
+                ax2.plot(x_time, differential, 'k', label='Differential')
+                ax2.plot(x_time, throttle, 'g', label='Throttle')
+                ax2.legend()
+                # https: // stackoverflow.com/questions/25689238/show-origin-axis-x-y-in-matplotlib-plot
+                ax2.axhline(y=1, color='b', linestyle=':')
+                ax2.axhline(y=0, color='k')
+                ax2.axhline(y=-1, color='b', linestyle=':')
                 plt.show(block=True)
                 # block=True only needed if
                 # plt.ion()

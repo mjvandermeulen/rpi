@@ -94,14 +94,28 @@ class Temperature (object):
     def _write_to_file(self):
         reading_data = {
             'time_stamp': self._time_list[-1],
+            # settings (match .csv file!)
+            'setpoint_f': float(self.setpoint_f),
+            'k_p': float(self._k_p),
+            'k_i': float(self._k_i),
+            'k_d': float(self._k_d),
+            'max_i': float(self._max_i),
+            'min_i': float(self._min_i),
+            'd_x': int(self._d_x),
+            'min_throttle': float(self.min_throttle),
+            'max_throttle': float(self.max_throttle),
+            'interval': float(self.interval),
+            'min_switch_time': float(self.min_switch_time),
+            # measurements
             'temp_f': self.current_temp_f,
             'temp_c': self.current_temp_c,
-            'throttle': float(self.throttle()),
-            # important, since setpoint_f can change!
-            'setpoint_f': float(self.setpoint_f),
-            # error can be deduced
+            # calculations.
+            # error = setpoint - temp_f
             'integral': float(self._integral),
-            'differential': float(self._differential)
+            'differential': float(self._differential),
+            'control_function_value': float(self.control_function_value),
+            # throttle can easily be deduced... # make obsolete?
+            'throttle': float(self.throttle()),
         }
         self._writer.write_temperature_reading(reading_data)
 
