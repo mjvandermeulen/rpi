@@ -1,4 +1,26 @@
 #!/usr/local/bin env python3
+import argparse
+
+parser = argparse.ArgumentParser(
+    description='Plot temperature data written by the temperature controller class')
+parser.add_argument('filename', type=open,
+                    help='required filename (including the path)')
+parser.add_argument('--temp-only', '-t',  # turned into temp_only with an underscore
+                    help='display temperature plot only. (default: show pid plot as well)',
+                    action="store_true")
+parser.add_argument('--kpid', '-k',
+                    help='display the k_p, k_i and k_d values',
+                    action="store_true")
+parser.add_argument('--interval', '-i',
+                    help='display the interval and min_switch_time values',
+                    action="store_true")
+args = parser.parse_args()
+print(args)
+print(args.filename)
+# parser.add_argument('--foo', nargs=2, help=)
+# parser.add_argument('--bar', nargs=3)
+# print(parser.parse_args('--bar c d e --foo a b'.split()))
+
 
 # import csv
 # r = {
@@ -20,24 +42,24 @@
 # r = 3.4
 # print(f"{r:3.10f}")
 
-import csv
-with open('./csv_automation/temperature_profiles.csv', encoding='utf-8-sig') as csv_file:
-    csv_reader = csv.DictReader(csv_file)
-    line_count = 0
-    for i in range(5):
-        print('*****')
-    for row in csv_reader:
-        print(row)
-        print(row["skip"])
-        print(row["name"])
-        print('=========')
-        if True:
-            print(f'Column names are {", ".join(row)}')
-            line_count += 1
-        for key in row:
-            print("key: {} --- row[key]: {}".format(key, row[key]))
-        line_count += 1
-    print(f'Processed {line_count} lines.')
+# import csv
+# with open('./csv_automation/temperature_profiles.csv', encoding='utf-8-sig') as csv_file:
+#     csv_reader = csv.DictReader(csv_file)
+#     line_count = 0
+#     for i in range(5):
+#         print('*****')
+#     for row in csv_reader:
+#         print(row)
+#         print(row["skip"])
+#         print(row["name"])
+#         print('=========')
+#         if True:
+#             print(f'Column names are {", ".join(row)}')
+#             line_count += 1
+#         for key in row:
+#             print("key: {} --- row[key]: {}".format(key, row[key]))
+#         line_count += 1
+#     print(f'Processed {line_count} lines.')
 
 # import csv
 # with open('./csv_automation_settings/temperature_profiles.csv') as csv_file:
@@ -95,4 +117,4 @@ with open('./csv_automation/temperature_profiles.csv', encoding='utf-8-sig') as 
 #     try:
 #         print(next(g), ' <- next(g) ')
 #     except StopIteration:
-    print("end of generator reached")
+print("end of generator reached")
