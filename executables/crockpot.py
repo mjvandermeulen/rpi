@@ -17,7 +17,7 @@ try:
 
     profile_name = 'test-feb'  # hardcoded
 
-    # plot filename as arg (defaults to profile name) TODO
+    # plot filename as arg (defaults to profile name) TODO argparse
     # arg 1: profile name
     # arg 2: csv filename (add .csv if not present)
     # arg 3: cvs folder pathname (remove trailing '/')

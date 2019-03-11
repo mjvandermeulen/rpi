@@ -4,6 +4,9 @@
 personal_settings.py
 
 # mjvandermeulen
+# Libre Office on Raspberry Pi
+*.csv#
+
 # When remotely working from Mac
 .AppleDouble/
 .DS_Store
