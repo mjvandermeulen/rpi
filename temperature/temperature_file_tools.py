@@ -6,10 +6,14 @@ import csv
 generic_profile = 'generic'
 path_to_csv_automation = '../csv_automation'
 
-# http://stackoverflow.com/a/28745948
-
 
 def read_temperature_control_data_from_file_pickle_generator(filename):
+    """
+    TODO: make totally generic!!! put in tools/file/pickle_reader.py
+
+    about pickle generators:
+    http://stackoverflow.com/a/28745948
+    """
     try:
         with open(filename, 'rb') as f:
             while True:

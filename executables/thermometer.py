@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import automation_classes.temperature_reader as t_reader
+import temperature.temperature_reader
 
-temp_reader = t_reader.TemperatureReader()
+temp_reader = temperature.temperature_reader.TemperatureReader()
 
 t_c = temp_reader.read_temp_c()
 t_f = temp_reader.read_temp_f()

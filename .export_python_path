@@ -15,4 +15,5 @@
 # $ import sys
 # $ sys.path
 
-export PYTHONPATH=$PYTHONPATH:~/Programming/Automation/python_libraries
+# uncomment next line (only real code line)
+# export PYTHONPATH=$PYTHONPATH:~/Programming/Automation/python_libraries

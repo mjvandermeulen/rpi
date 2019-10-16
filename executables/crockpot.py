@@ -2,10 +2,8 @@
 
 import time
 
-from automation_classes import temperature_reader
-from automation_classes import temperature
-from automation_classes import powertail
-from automation_modules import temperature_file_tools
+import temperature
+import power_control.powertail
 
 
 # MAIN
@@ -22,7 +20,7 @@ try:
     # arg 2: csv filename (add .csv if not present)
     # arg 3: cvs folder pathname (remove trailing '/')
 
-    profile = temperature_file_tools.read_temperature_profile(
+    profile = temperature.temperature_file_tools.read_temperature_profile(
         'temperature_profiles.csv', profile_name=profile_name)  # hardcoded file name.
     for profile_stage in profile:
         print("profile stage setpoint: {}".format(profile_stage["setpoint_f"]))
@@ -30,12 +28,13 @@ try:
         #     print("profile stage: profile_stage[\"{}\"] = {}".format(
         #         key, profile_stage[key]))
 
-    temp_reader = temperature_reader.TemperatureReader()
-    tc = temperature.Temperature(plot_file=profile_name,
-                                 appliance='crockpot')  # hardcoded appliance # hardcoded profile (used for plot_file name)
+    temp_reader = temperature.temperature_reader.TemperatureReader()
+    tc = temperature.temperature_controller.TemperatureController(
+        plot_file=profile_name,
+        appliance='crockpot')  # hardcoded appliance # hardcoded profile (used for plot_file name)
 
     # init powertail
-    power = powertail.PowerTail('BCM', 23, False)
+    power = power_control.powertail.PowerTail('BCM', 23, False)
 
     for profile_stage in profile:
         print("=======================================================================")

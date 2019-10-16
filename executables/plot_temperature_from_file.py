@@ -3,7 +3,7 @@
 import argparse
 import matplotlib.pyplot as plt
 
-from automation_modules import temperature_file_tools as temperature_file_tools
+import temperature.temperature_file_tools
 
 plt.ion()
 
@@ -60,7 +60,7 @@ try:
     keep_plotting = True
     while keep_plotting:
         try:
-            generator_of_dicts = temperature_file_tools.read_temperature_control_data_from_file_pickle_generator(
+            generator_of_dicts = temperature.temperature_file_tools.read_temperature_control_data_from_file_pickle_generator(
                 args.filename.name)
         except:
             print("Issue opening, reading or parsing the file {}".format(
