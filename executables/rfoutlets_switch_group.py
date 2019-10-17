@@ -3,7 +3,7 @@
 
 import sys
 import time
-from automation_modules import rfoutlets as rfo
+from python_libraries.automation_modules import rfoutlets as rfo
 
 
 # thoughts:
@@ -18,27 +18,16 @@ from automation_modules import rfoutlets as rfo
 # DATA (left pin) -> GPIO #17
 # VCC (center pin) -> +5VDC
 # GND (right pin) -> Ground
-# 
+#
 # Receiver Module
 # VCC (left pin) -> +5VDC
 # DATA (2nd pin from left) -> GPIO 21/27
 # GND (far right pin) -> Ground
 
-
 # Arguments:
 # 1: group
 # 2: mode (on/off)
 # 3: number of attempts
-
-# print
-# print
-# print
-# print
-# print 'Number of arguments: {} arguments'.format(len(sys.argv))
-# print 'Argument List: ', str(sys.argv), '\n'
-# print
-# print
-# print
 
 if len(sys.argv) > 2:
     outlet_group = sys.argv[1]
@@ -54,14 +43,14 @@ if len(sys.argv) > 2:
             time.sleep(2)
         rv = rfo.switch_outlet_group(outlet_group, mode)
     if rv:
-        print rv
+        print(rv)
     else:
-        print 'error'
+        print('error')
 else:
-    print 'usage example:'
-    print './rfoutlets_switch_group.py basem n 2\n'
-    print '2 arguments required'
-    print 'group'
-    print 'mode (e.g.: on)'
-    print '1 optional argument:'
-    print 'number of attempts'
+    print('usage example:')
+    print('./rfoutlets_switch_group.py basem n 2\n')
+    print('2 arguments required')
+    print('group')
+    print('mode (e.g.: on)')
+    print('1 optional argument:')
+    print('number of attempts')
