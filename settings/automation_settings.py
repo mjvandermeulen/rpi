@@ -68,10 +68,13 @@ outlet_groups = {
         r'10|t[aei]e?n',
         ['10'],
     ),
-    'coffee': OutletGroup(
-        r'co?ff?e?e?',
-        ['1'],
+    # pytest only:
+    '1000': OutletGroup(
+        r'10|tho?u?sa?nd?',
+        ['1000'],
     ),
+    # pytest only:
+
     'airfilter': OutletGroup(
         r'(air)?[ ]?(fi?lte?r|pu?ri?fi?e?r)',
         ['2'],
@@ -95,6 +98,10 @@ outlet_groups = {
     'snowman': OutletGroup(
         r'sno?wm?a?n?',
         ['6'],
+    ),
+    'coffee': OutletGroup(
+        r'co?ff?e?e?',
+        ['9'],
     ),
     # 'humidifier': OutletGroup(
     #     r'hu?mi?d(ifier)?s?',

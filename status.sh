@@ -9,17 +9,18 @@ Usage: ./${0##*/}
 Optional arguments: --email -e --help -h
 Example: ./${0##*/} --email
 HELP
-exit 0
 }
 
 main(){
+    print_help
     echo
     echo %%%%%%%%%%%%%%%%%%%% git status  %%%%%%%%%%%%%%%%
     git status
 
     echo %%%%%%%%%%%%%%%%%%%% py.test %%%%%%%%%%%%%%%%%%%%
-    echo NO TESTING YET!!! # py.test # no -v: keep it short underneath git status
+    echo pytest --ignore=adventures # TODO use string to do exactly what is shown here TODO no -v: keep it short underneath git status
     echo
+    pytest --ignore=adventures
 }
 
 # Run email test() {
@@ -30,7 +31,6 @@ NO EMAIL TESTING CONFIGURED YET!!
 
 EMAIL
 }
-
 # read -r -p "Send test email to mjvandermeulen's phone? [y/yes] " response
 # response=${response,,}    # tolower
 # if [[ "$response" =~ ^(yes|y)$ ]]
@@ -51,6 +51,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     --help|-h)
         print_help
+        exit 0
         ;;
     --email|-e)
         run_test_email=true
