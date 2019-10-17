@@ -1,0 +1,15 @@
+skip,name,notes,date,appliance,appliance_setting,version,duration,setpoint_f,k_p,k_i,k_d,min_i,max_i,d_x,min_throttle,max_throttle,interval,min_switch_time,notify_top_of_hour,notify_setpoint,notify_high,notify_low,warn_high_f,warn_low_f
+# text (save as .csv (not UTF!!!),format (name is text),text,text,text,text,text,float,float,float,float,float,float,float,int,float,float,int,int,float,yes/no,semicolon delimited floats,semicolon delimited floats,semicolon delimited floats,
+# skipped if not empty,explanation,,,,,,,,,,,,,,,,,,notify every x hours. For 1 hour: on top of the hour. Every 0.5 hour: top and bottom. 3 hours: ??? Not sure,"notify below if falling, above if rising",only notify when temperature is rising. Multiple notifications separated by semicolons.,only notify when temperature is rising,only warn when temperature is rising,only warn when temperature is falling
+# DOING,implementation,,,,,,,,,,,,,TODO,,,,,TODO,DOING,TODO,TODO,TODO,TODO
+,cbd,d_x fixed at 1 minutes worked best,Jan 20 19,crockpot,hot,1,24,180,0.5,0.0005,60,-2000,2000,60,-1,1,60,2,3,yes,,,190,170
+,ricecooker_investigation,,Feb 3 2019,ricecooker,cook,1,1,180,0.005,0,0,0,0,30,0,1,30,1,1,yes,190,170,200,
+,,,,,,,1,180,0.01,0,0,0,0,30,0,1,30,1,1,yes,190,170,200,
+,,,,,,,0.75,180,0.02,0,0,0,0,30,0,1,30,1,1,yes,190,170,200,
+,,,,,,,0.5,180,0.05,0,0,0,0,30,0,1,30,1,1,yes,190,170,200,
+,,full throttle 10 degrees low.,,,,,0.5,180,0.1,0,0,0,0,30,0,1,30,1,1,yes,190,170,200,
+,,full throttle 2 degrees low.,,,,,0.5,180,0.5,0,0,0,0,30,0,1,30,1,1,yes,190,170,200,
+,test-feb,quick profile test,feb 6 2019,crockpot,hot,0,1,85,0.5,0.0005,60,-2000,2000,60,0,1,60,2,3,yes,,,,
+,test-feb,quick profile test,feb 6 2019,crockpot,hot,0,1,80,0.5,0.0005,60,-2000,2000,60,0,1,60,2,3,yes,,,,
+,test-feb,quick profile test,feb 6 2019,crockpot,hot,0,1,90,0.5,0.0005,120,-2000,2000,60,0,1,120,2,3,yes,,,,
+,LAST LINE (stop reading),,,,,,,,,,,,,,,,,,,,,,,

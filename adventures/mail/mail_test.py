@@ -1,6 +1,6 @@
 #!/usr/local/bin/env python3
 
-from automation_modules import automation_email
+import tools.mail.automation_email
 
-automation_email.send_family_sms(
+tools.mail.automation_email.send_family_sms(
     ['Maarten'], 'Test Subject', 'Test Body', True)

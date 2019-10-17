@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import automation_classes.powertail as powertail
+import power_control.powertail
 
 ### settings ###
 pin_mode = "BCM"
@@ -13,4 +13,4 @@ print()
 print()
 
 # create instance of PowerTail
-power = powertail.PowerTail(pin_mode, power_pin, True)
+power = power_control.powertail.PowerTail(pin_mode, power_pin, True)

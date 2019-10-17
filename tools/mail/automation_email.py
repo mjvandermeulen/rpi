@@ -6,7 +6,7 @@ import smtplib
 
 
 # TODO keep this or change to personal_settings
-from automation_modules import personal_settings as personal
+import settings.personal_settings
 
 
 def send_email_smtp_gmail(user, pwd, recipients, subject, body):
@@ -32,8 +32,8 @@ def send_email_smtp_gmail(user, pwd, recipients, subject, body):
 
 
 def send_gmail_email(recipients, subject, body, addtime=False):
-    user = personal.gmail_account['user']
-    pwd = personal.gmail_account['app_password']
+    user = settings.personal_settings.gmail_account['user']
+    pwd = settings.personal_settings.gmail_account['app_password']
 
     if not subject:
         subject = 'RPi'
@@ -76,16 +76,19 @@ def send_family_message_by_methods(names, methods, subject, body, addtime=False)
     for name in names:
         recipients = []
         name = name.lower()  # has to be lower case
-        if name in personal.family_addresses:
+
+        if name in settings.personal_settings.family_addresses:
             if not type(methods) is list:
                 methods = [methods]  # has to be list
             # used to be ternary like:
             #     methods = methods if type(methods) is list else [methods]
             for method in methods:
-                recipients.append(personal.family_addresses[name][method])
+                recipients.append(
+                    settings.personal_settings.family_addresses[name][method])
             send_gmail_email(recipients, subject, body, addtime)
         else:
-            print(name + ' not in personal.family_addresses dictionary.' + __file__)
+            print(
+                name + ' not in settings.personal_settings.family_addresses dictionary.' + __file__)
 
 
 # cleanest way to call send_family_sms with time is
@@ -114,7 +117,7 @@ def list_of_safe_senders_substrings():
     """
 
     safe_list = []
-    for name in personal.family_addresses:
+    for name in settings.personal_settings.family_addresses:
         # check if exists you can loop over the dictonary and test for sms or email
         # turn into (not very legible list comprehension)??? since you're just creating a list with a condition.
         #   NOPE: You're not looping over a list, but over a dictionary (multiple levels)
