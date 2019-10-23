@@ -1,4 +1,3 @@
-#!/usr/local/bin/env python3
 
 import tools.mail.automation_email
 

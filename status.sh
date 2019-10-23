@@ -20,7 +20,7 @@ main(){
     echo %%%%%%%%%%%%%%%%%%%% py.test %%%%%%%%%%%%%%%%%%%%
     echo pytest --ignore=adventures # TODO use string to do exactly what is shown here TODO no -v: keep it short underneath git status
     echo
-    pytest --ignore=adventures
+    pytest --ignore=adventures # not needed anymore, but left here as example.
 }
 
 # Run email test() {
