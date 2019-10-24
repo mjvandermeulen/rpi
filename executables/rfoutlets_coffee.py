@@ -11,44 +11,53 @@
 # Rinse everything out by putting in a new paper filter and brewing a full pot
 # of clean water. Repeat once.
 
+# settings:
+
 import time
 from python_libraries.automation_modules import rfoutlets as rfo
-
 import argparse
+cycles = 30
+brew = 20  # seconds
+pause = 15 * 60  # seconds
 
-liquid_instructions = "Add vinegar and water 1 : 1 in coffeemaker. Fill MrCoffee to 12 cups when using default settings."
+
+cleaning_instructions = "Add vinegar and water 1 : 1 in coffeemaker. Fill MrCoffee to 12 cups when using default settings."
 
 try:
     parser = argparse.ArgumentParser(
-        description="Clean the coffeemaker. EXAMPLE: <$ coffeeclean coffee -d 1 >" + liquid_instructions)
-
+        description="TODO")
     parser.add_argument("outlet_group")
 
     parser.add_argument('--delay', '-d',
                         type=float, default=0.1,
                         metavar='hours')
-
-    parser.add_argument('--brew', '-b',
-                        type=int, default=20,
-                        metavar='seconds')
-
-    parser.add_argument('--pause', '-p',
-                        type=int, default=15 * 60,
-                        metavar='seconds')
-
-    parser.add_argument('--cycles', '-c',
-                        type=int, default=30)
+    parser.add_argument('--clean', '-c',
+                        action='store_true',
+                        help='use TMUX when running a cleaning cycle')
+    parser.add_argument('--rinse', '-r',
+                        action='store_true',
+                        help='rinse the coffeepot after the cleaning cycle')
+    parser.add_argument('--pytest',
+                        action="store_true",
+                        help='used by pytest, to run a quicker test'
+                        )
 
     args = parser.parse_args()
+    if args.pytest:
+        cycles = 1
+        brew = 0.5  # seconds
+        pause = 10  # seconds
     args_dict = vars(args)
     for key in args_dict:
         print(key + ' -> ' + str(args_dict[key]))
 
-    total_hours = args.delay + (args.pause * (args.cycles - 1) +
-                                args.brew * args.cycles) / (60.0 * 60.0)
+    total_hours = (
+        args.delay +
+        (pause * (cycles - 1) + brew * cycles) / (60.0 * 60.0)
+    )
 
     print
-    print(liquid_instructions)
+    print(cleaning_instructions)
 
     print
     print("The brewing process will start in {:.2f} hours, and will be finished {:.2f} hours from now...".format(
@@ -57,21 +66,21 @@ try:
     time.sleep(args.delay * 60 * 60)
 
     rv = ''
-    for i in range(args.cycles):
+    for i in range(cycles):
         # PAUSE
         if i > 0:
-            time.sleep(args.pause)
+            time.sleep(pause)
 
         # BREW
         print
         print("brew cycle {:2d}".format(i+1))
-        rv = rfo.switch_outlet_group(args.outlet_group, 'on')
+        rv = rfo.switch_outlet_group(args.outlet_group, 'on', 3, 2)
         if rv:
             print(rv)
         else:
             print('error')
-        time.sleep(args.brew)
-        rv = rfo.switch_outlet_group(args.outlet_group, 'off')
+        time.sleep(brew)
+        rv = rfo.switch_outlet_group(args.outlet_group, 'off', 3, 2)
         if rv:
             print(rv)
         else:
