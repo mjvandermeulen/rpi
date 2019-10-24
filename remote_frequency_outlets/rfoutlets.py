@@ -78,7 +78,7 @@ def send_code(code):
 ## move attempts to python program (sub process)
 ##   called by send_code
 ## todo: check if group exists.
-def switch_outlet(outlets, mode="off", attempts=1, delay=3):
+def switch_outlet(outlets, mode="off", attempts=1, delay=1):
 
     for i in range(attempts):
         if i > 0:
@@ -102,7 +102,7 @@ def blink_outlet(outlets, blinks=3, delay=1):
             send_code(OUTLET_CODES[outlet][mode])
 
 
-def switch_outlet_group(outlet_group, mode="off"):
+def switch_outlet_group(outlet_group, mode="off", attempts=1, delay=1):
     outlets = []
     # Check if outlet_group given is already a key in automation_settings.outlet_groups (already properly named)
     if outlet_group in automation_settings.outlet_groups.keys():
@@ -125,7 +125,7 @@ def switch_outlet_group(outlet_group, mode="off"):
             mode = 'on'
         else:
             mode = 'off'
-        switch_outlet(outlets, mode)
+        switch_outlet(outlets, mode, attempts)
 
     if outlet_group in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
         r = "Outlet "
