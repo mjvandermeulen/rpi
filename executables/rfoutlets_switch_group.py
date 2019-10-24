@@ -38,10 +38,7 @@ if len(sys.argv) > 2:
         attempts = 3
 
     rv = ''
-    for i in range(attempts):
-        if i > 0:
-            time.sleep(2)
-        rv = rfo.switch_outlet_group(outlet_group, mode)
+    rv = rfo.switch_outlet_group(outlet_group, mode, attempts)
     if rv:
         print(rv)
     else:
