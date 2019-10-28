@@ -75,11 +75,31 @@ outlet_groups = {
         r'10|tho?u?sa?nd?',
         ['1000'],
     ),
-    # pytest only:
 
+    'livingroom': OutletGroup(
+        r'l(?:iving)?r(?:oom)?s?',
+        ['1', '2', '3'],
+    ),
+
+    # '"fans (noise)"': OutletGroup(
+    #     r'noise?s?|fans',
+    #     ['7', '3'],
+    # ),
+    'tree': OutletGroup(
+        r'tre?e?s?',
+        ['4'],
+    ),
+    # 'snowman': OutletGroup(
+    #     r'sno?wm?a?n?',
+    #     ['6'],
+    # ),
+    'coffee': OutletGroup(
+        r'co?ff?e?e?',
+        ['6'],
+    ),
     'airfilter': OutletGroup(
         r'(air)?[ ]?(fi?lte?r|pu?ri?fi?e?r)',
-        ['2'],
+        ['7'],
     ),
     'fan': OutletGroup(
         r'fan\b',  # not fans: see regex with fans.
@@ -87,30 +107,22 @@ outlet_groups = {
                    # word boundary overlaps with next wordboundary
                    # see debuggex.com, but no problem because
                    # r'fan\b\b\b\b\b' works equally well.
-        ['3'],
+        ['8'],
     ),
-    '"fans (noise)"': OutletGroup(
-        r'noise?s?|fans',
-        ['2', '3'],
+    'dehumidifier': OutletGroup(
+        r'de?hu?i?d?i?f?i?e?r?',
+        ['9']
     ),
-    'tree': OutletGroup(
-        r'tre?e?s?',
-        ['4', '5'],
-    ),
-    'snowman': OutletGroup(
-        r'sno?wm?a?n?',
-        ['6'],
-    ),
-    'coffee': OutletGroup(
-        r'co?ff?e?e?',
-        ['1'],
+    'officenoise': OutletGroup(
+        r'o?ff?i?ce?no?i?s?e?',
+        ['8', '9']
     ),
     'basement': OutletGroup(
         # 'b(ase)?m(ment)?s?',
         # no (?:...) non-capturing groups needed, since only named groups
         # are used
         r'ba?s?e?me?n?t?s?',  # yields 2^7 possibilities...
-        ['9', '10'],
+        ['10'],
     ),
     # 'humidifier': OutletGroup(
     #     r'hu?mi?d(ifier)?s?',
@@ -124,10 +136,6 @@ outlet_groups = {
     #     r're?d([ ]?lights?)?',
     #     ['4'],
     #     ),
-    # 'livingroom': OutletGroup(
-    #     'l(?:iving)?r(?:oom)?s?',
-    #     ['1', '2'],
-    #     ],
     # 'lights': OutletGroup(
     #     r'li?g?h?te?s?',
     #     [],
