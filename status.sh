@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# I could of course write status.sh in python... TODO
+
 # Help menu
 print_help() {
 cat <<-HELP
@@ -12,15 +14,23 @@ HELP
 }
 
 main(){
-    print_help
-    echo
-    echo %%%%%%%%%%%%%%%%%%%% git status  %%%%%%%%%%%%%%%%
-    git status
+    echo %%% TODOs preceded or trailed by 4 or 5 asterisks %%%
+    git grep -n '\*\*\*\*\sTODO|TODO\s\*\*\*\*'
+    # alternative: https://github.com/ggreer/the_silver_searcher
 
     echo %%%%%%%%%%%%%%%%%%%% py.test %%%%%%%%%%%%%%%%%%%%
     echo pytest --ignore=adventures # TODO use string to do exactly what is shown here TODO no -v: keep it short underneath git status
     echo
     pytest --ignore=adventures # not needed anymore, but left here as example.
+
+    echo
+    echo %%%%%%%%%%%%%%%%%%%% git status  %%%%%%%%%%%%%%%%
+    git status
+
+    print_help
+
+    echo %%% trailing spaces %%%
+    git grep -n '\s$'
 }
 
 # Run email test() {
@@ -57,9 +67,9 @@ while [ "$#" -gt 0 ]; do
         run_test_email=true
         ;;
     *)
-      printf "************************************************************\n"
-      printf "* Error: Invalid argument, run --help for valid arguments. *\n"
-      printf "************************************************************\n"
+      printf "############################################################\n"
+      printf "# Error: Invalid argument, run --help for valid arguments. #\n"
+      printf "############################################################\n"
       exit 1
   esac
   shift

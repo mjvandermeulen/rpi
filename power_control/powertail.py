@@ -120,7 +120,7 @@ class PowerTail(object):
 
     def run_throttled_power_interval(self, power, throttle, min_throttle, max_throttle, interval, min_switch_time):
         """
-        Keep in here, since it's powertail specific: 
+        Keep in here, since it's powertail specific:
         what to do with the control_function value.
         (a device with multiple settings (say slow, normal and fast would have to interpret the u value differently))
         example:

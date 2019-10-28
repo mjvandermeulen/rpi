@@ -155,7 +155,7 @@ print("end loop")
 #     csv_reader = csv.DictReader(csv_file)
 #     line_count = 0
 #     for i in range(5):
-#         print('*****')
+#         print('###')
 #     for row in csv_reader:
 #         print(row)
 #         print(row["skip"])
@@ -174,7 +174,7 @@ print("end loop")
 #     csv_reader = csv.DictReader(csv_file)
 #     line_count = 0
 #     for i in range(5):
-#         print('*****')
+#         print('###')
 #     for row in csv_reader:
 #         print('=========')
 #         if True:
