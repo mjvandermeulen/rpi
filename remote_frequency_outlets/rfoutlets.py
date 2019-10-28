@@ -3,6 +3,7 @@
 import subprocess
 import re
 import time
+import math
 
 from settings import automation_settings
 
@@ -10,17 +11,17 @@ from settings import automation_settings
 # DATA (left pin) -> GPIO #17
 # VCC (center pin) -> +5VDC
 # GND (right pin) -> Ground
-# 
+#
 # Receiver Module
 # VCC (left pin) -> +5VDC
 # DATA (2nd pin from left) -> GPIO 21/27
 # GND (far right pin) -> Ground
 
 # @todo move some of these to automation_settings.
-RFOUTLET_PYTHON_DIR = '/home/pi/Programs/subprocesses/'  # end with '/'
+# AUTOMATION_EXECUTABLES_PATH = '/home/pi/Programs/subprocesses/'  # end with '/'
 RFOUTLET_DIR = '/home/pi/rfoutlet/'  # end with '/'
 CODESEND_COMMAND = 'codesend'
-PULSELENGTH = automation_settings.rfpulse_length
+PULSELENGTH = automation_settings.rfpulse_length  # TODO cleanup
 OUTLET_CODES = automation_settings.rfoutlet_codes
 
 MONTH_DICT = {
@@ -44,7 +45,8 @@ MONTH_DICT = {
 def parse_proper_outlet_group_name(group):
     group = group.lower()
     for key in automation_settings.outlet_groups:
-        p = re.compile(automation_settings.outlet_groups[key].regex + '$', re.X | re.I)
+        p = re.compile(
+            automation_settings.outlet_groups[key].regex + '$', re.X | re.I)
         if p.match(group):
             return key
     return ''
@@ -66,18 +68,18 @@ def send_code(code):
 
 
 ##
-## @brief      turns outlets in list on or off.
+# @brief      turns outlets in list on or off.
 ##
-## @param      group  list of outlets e.g.: ['1', '3']
-## @param      on     { parameter_description }
+# @param      group  list of outlets e.g.: ['1', '3']
+# @param      on     { parameter_description }
 ##
-## @return     None @todo: return True or error message.
-##             First check if outlets in OUTLET_CODES
+# @return     None @todo: return True or error message.
+# First check if outlets in OUTLET_CODES
 ##
-## improvement @todo @maarten:
-## move attempts to python program (sub process)
-##   called by send_code
-## todo: check if group exists.
+# improvement @todo @maarten:
+# move attempts to python program (sub process)
+# called by send_code
+# todo: check if group exists.
 def switch_outlet(outlets, mode="off", attempts=1, delay=1):
 
     for i in range(attempts):
@@ -90,36 +92,49 @@ def switch_outlet(outlets, mode="off", attempts=1, delay=1):
             send_code(OUTLET_CODES[outlet][mode])
 
 
-def blink_outlet(outlets, blinks=3, delay=1):
+def blink_outlet(outlets, mode='blink', blink=(0, 0, 0)):
+    # refer to settings for default blinks here and here only TODO
+    blinks = blink[0] if not blink[0] is None else 5
+    blinkon = blink[1] if not blink[1] is None else 1
+    blinkoff = blink[2] if not blink[2] is None else 1
+
     for i in range(blinks):
         if i > 0:
-            time.sleep(delay)
-        if i % 2 == 0:
-            mode = 'on'
-        else:
-            mode = 'off'
+            time.sleep(blinkoff)
         for outlet in outlets:
-            send_code(OUTLET_CODES[outlet][mode])
+            send_code(OUTLET_CODES[outlet]['on'])
+        time.sleep(blinkon)
+        if not(i + 1 == blinks and (mode == 'n' or mode == 'on')):
+            for outlet in outlets:
+                send_code(OUTLET_CODES[outlet]['off'])
 
 
-def switch_outlet_group(outlet_group, mode="off", attempts=1, delay=1):
+def switch_outlet_group(outlet_group, mode="off", attempts=3, delay=1, blink=(0, 0, 0)):
     outlets = []
     # Check if outlet_group given is already a key in automation_settings.outlet_groups (already properly named)
     if outlet_group in automation_settings.outlet_groups.keys():
         outlets = automation_settings.outlet_groups[outlet_group].outlets
     else:
         for key in automation_settings.outlet_groups:
-            p = re.compile(automation_settings.outlet_groups[key].regex, re.X | re.I)
+            p = re.compile(
+                automation_settings.outlet_groups[key].regex, re.X | re.I)
             if p.match(outlet_group):
                 outlet_group = key
                 outlets = automation_settings.outlet_groups[key].outlets
                 break  # outlet group match found
     if len(outlets) == 0:
-        return ''  # Maarten doesn't think it should be
-                   # possible to get here.
-                   # A group would need to have an empty outlets list
-    if mode == 'blink':
-        blink_outlet(outlets)
+        return ''
+        # Maarten doesn't think it should be
+        # possible to get here.
+        # A group would need to have an empty outlets list
+
+    if attempts is None:
+        attempts = 3  # TODO settings
+    if delay is None:
+        delay = 1  # TODO settings
+
+    if mode == 'blink' or (not blink[0] is None and blink[0] > 0):
+        blink_outlet(outlets, mode, blink)
     else:
         if 'n' in mode:
             mode = 'on'
@@ -127,12 +142,45 @@ def switch_outlet_group(outlet_group, mode="off", attempts=1, delay=1):
             mode = 'off'
         switch_outlet(outlets, mode, attempts)
 
-    if outlet_group in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
+    if outlet_group.isnumeric():
         r = "Outlet "
     else:
         r = "Outlet group "
 
     return r + outlet_group + " turned " + mode + "."
+
+
+def rfo_schedule_in_minutes(group, mode, minutes_from_now, attempts=3, delay=1, blink=(0, 0, 0)):
+    time_string = 'now + {} minute'.format(int(math.ceil(minutes_from_now)))
+    rfo_schedule(time_string, group, mode, minutes_from_now,
+                 attempts, delay, blink)
+
+
+def rfo_schedule(time_string, group, mode, minutes_from_now, attempts=3, delay=1, blink=(0, 0, 0)):
+    print("timestring " + time_string)
+    sched_cmd = ['at', time_string]
+    args = ''
+    if attempts != 3:
+        args += ' --attempts {}'.format(attempts)
+    if delay != 1:
+        args += ' --delay {}'.format(delay)
+    if blink[0] != 0:
+        args += ' --blinks {}'.format(blink[0])
+    if blink[1] != 0:
+        args += ' --blinkon {}'.format(blink[1])
+    if blink[2] != 0:
+        args += ' --blinkoff {}'.format(blink[2])
+    command = 'python3 {}rfoutlets_switch_group.py {} {} {}'.format(
+        automation_settings.AUTOMATION_EXECUTABLES_PATH, group, mode, args)
+    print
+    print(command)
+    p = subprocess.Popen(sched_cmd, stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p.communicate(command)
+    print
+    print("output rfo_schedule at linux")
+    print(output)
+    print("end output rfo_schedule at linux")
 
 
 # # returns tupel (string, string)
@@ -163,7 +211,7 @@ def switch_outlet_group(outlet_group, mode="off", attempts=1, delay=1):
 # def switch_outlet_group_at(group, mode, time):
 #     sched_cmd = ['at', time]
 #     command = 'python {}rfoutlets_switch_group.py {} {}'.format(
-#         RFOUTLET_PYTHON_DIR, group, mode)
+#         AUTOMATION_EXECUTABLES_PATH, group, mode)
 #     p = subprocess.Popen(sched_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 #     output = p.communicate(command)[1]  # includes warning
 #                                         # e.g.:

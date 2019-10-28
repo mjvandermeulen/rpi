@@ -19,7 +19,7 @@ class TemperatureController (object):
 # TODO: add 'generic'    def __init__(self, profile='generic', plot_file='temperature_readings'):
 
     def __init__(self, plot_file='temperature_readings', appliance='crockpot'):
-        self.plot_file = settings.automation_settings.tempcontroller_measurements_path + '/' + plot_file
+        self.plot_file = settings.automation_settings.TEMPCONTROLLER_MEASUREMENTS_PATH + '/' + plot_file
         self._writer = temperature.temperature_file_writer.TemperatureFileWriter(
             self.plot_file)
 

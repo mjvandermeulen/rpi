@@ -11,80 +11,103 @@
 # Rinse everything out by putting in a new paper filter and brewing a full pot
 # of clean water. Repeat once.
 
-# settings:
 
 import time
-from python_libraries.automation_modules import rfoutlets as rfo
 import argparse
-cycles = 30
-brew = 20  # seconds
-pause = 15 * 60  # seconds
+import collections
+import math
 
+# from settings.automation_settings import AUTOMATION_EXECUTABLES_PATH
+from remote_frequency_outlets import rfoutlets as rfo
+from settings import automation_settings
+
+# schedule_brew(args.outlet_group, schedule_time, settings.brew_time,)
+
+
+def schedule_brew(group, minutes_from_now, brew_time):
+    mode = 'off'  # final state
+    attempts = 3
+    delay = 1
+    blink = (1, brew_time, 0)
+    time_string = 'now + {} minute'.format(int(math.ceil(minutes_from_now)))
+    rfo.rfo_schedule(time_string, group, mode, minutes_from_now,
+                     attempts, delay, blink)
+
+
+settings = automation_settings.coffee_settings["default"]
 
 cleaning_instructions = "Add vinegar and water 1 : 1 in coffeemaker. Fill MrCoffee to 12 cups when using default settings."
 
 try:
     parser = argparse.ArgumentParser(
-        description="TODO")
+        description="Mr Coffee 12 cup coffeemaker programmer using a remote frequency outlet.")
     parser.add_argument("outlet_group")
 
     parser.add_argument('--delay', '-d',
-                        type=float, default=0.1,
-                        metavar='hours')
-    parser.add_argument('--clean', '-c',
-                        action='store_true',
-                        help='use TMUX when running a cleaning cycle')
-    parser.add_argument('--rinse', '-r',
-                        action='store_true',
-                        help='rinse the coffeepot after the cleaning cycle')
-    parser.add_argument('--pytest',
-                        action="store_true",
-                        help='used by pytest, to run a quicker test'
-                        )
+                        help='delay start of brewing in minutes',
+                        type=float, default=automation_settings.coffee_default_delay,
+                        metavar='min')
+    maintenance_group = parser.add_mutually_exclusive_group()
+    maintenance_group.add_argument('--clean', '-c',
+                                   action='store_true',
+                                   help='cleaning cycle for full 12 cup MrCoffee 1/2 vinegar 1/2 water')
+    maintenance_group.add_argument('--rinse', '-r',
+                                   action='store_true',
+                                   help='rinse the coffeepot after the cleaning cycle')
+    maintenance_group.add_argument('--test',
+                                   action="store_true",
+                                   help='used by pytest, to run a quicker test'
+                                   )
 
     args = parser.parse_args()
-    if args.pytest:
-        cycles = 1
-        brew = 0.5  # seconds
-        pause = 10  # seconds
+    if args.test:
+        settings = automation_settings.coffee_settings["test"]
+    elif args.clean:
+        settings = automation_settings.coffee_settings["clean"]
+    elif args.rinse:
+        settings = automation_settings.coffee_settings["rinse"]
+
     args_dict = vars(args)
     for key in args_dict:
         print(key + ' -> ' + str(args_dict[key]))
 
     total_hours = (
-        args.delay +
-        (pause * (cycles - 1) + brew * cycles) / (60.0 * 60.0)
+        args.delay * 60 +
+        (settings.pause * (settings.cycles - 1) +
+         settings.brew_time * settings.cycles) / (60.0 * 60.0)
     )
 
     print
     print(cleaning_instructions)
 
     print
-    print("The brewing process will start in {:.2f} hours, and will be finished {:.2f} hours from now...".format(
+    print("The brewing process will start in {:3d} minutes, and will be finished {:.2f} hours from now...".format(
         args.delay, total_hours))
 
-    time.sleep(args.delay * 60 * 60)
-
     rv = ''
-    for i in range(cycles):
+    schedule_time = args.delay * 60
+
+    for i in range(settings.cycles):
         # PAUSE
         if i > 0:
-            time.sleep(pause)
+            schedule_time += settings.pause
 
-        # BREW
-        print
-        print("brew cycle {:2d}".format(i+1))
-        rv = rfo.switch_outlet_group(args.outlet_group, 'on', 3, 2)
-        if rv:
-            print(rv)
+        # BREW:
+        minutes_from_now = int(math.ceil(schedule_time / 60))
+        if settings.brew_time < 3 * 60:
+            # schedule once and use 1 blink for length of brew
+            schedule_brew(args.outlet_group, minutes_from_now,
+                          settings.brew_time)
         else:
-            print('error')
-        time.sleep(brew)
-        rv = rfo.switch_outlet_group(args.outlet_group, 'off', 3, 2)
-        if rv:
-            print(rv)
-        else:
-            print('error')
+            # schedule twice: turn on and turn off
+            rfo.rfo_schedule_in_minutes(
+                args.outlet_group, 'on', minutes_from_now, 3, 1)
+            minutes_from_now = int(math.ceil(
+                (schedule_time + settings.brew_time) / 60))
+            rfo.rfo_schedule_in_minutes(
+                args.outlet_group, 'off', minutes_from_now, 3, 1)
+        schedule_time += settings.brew_time
+
 
 except KeyboardInterrupt:
     rfo.switch_outlet_group(args.outlet_group, 'off')

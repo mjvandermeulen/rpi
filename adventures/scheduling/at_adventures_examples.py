@@ -3,7 +3,8 @@
 import subprocess
 import re
 
-RFOUTLET_PYTHON_DIR = '/home/pi/Programming/Automation/executables/'  # end with '/'
+# end with '/' TODO *** move to settings
+AUTOMATION_EXECUTABLES_PATH = '/home/pi/Programming/Automation/executables/'
 
 # http://stackoverflow.com/a/10676359
 
@@ -18,7 +19,7 @@ def at_test():
     sched_cmd = ['at', time]
     print(sched_cmd)
     command = 'python {}rfoutlets_switch_group.py {} {}'.format(
-        RFOUTLET_PYTHON_DIR, group, mode)
+        AUTOMATION_EXECUTABLES_PATH, group, mode)
     print(command)
     p = subprocess.Popen(sched_cmd, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -52,6 +53,7 @@ def atrm_all_test():
     # http://unix.stackexchange.com/a/53148
     # output = subprocess.check_output to check output
     subprocess.call(
+        # testing, add echo:  "for i in `atq | awk '{print $1}'`;do echo atrm $i;done", shell=True)
         "for i in `atq | awk '{print $1}'`;do atrm $i;done", shell=True)
 
 
@@ -60,8 +62,8 @@ def jobs_from_atq():
     print(atq_out)
     pattern_string = r"""
         ^   # beginning of line
-        (?P<job>
-            \d+
+        (?P<job> # Named capture group job
+            \d+ # at least one digit
         )
         .* # anything lazy
         $   # end of line. (re.MULTILINE NEEDED)
@@ -91,3 +93,4 @@ def remove_at_job(job):
 # atrm_test('1')
 # atrm_all_test()
 # remove_all_at_jobs()
+jobs_from_atq()

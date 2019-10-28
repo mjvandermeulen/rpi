@@ -3,9 +3,11 @@
 import collections
 from settings import personal_settings
 
-automation_project_path = '/home/pi/Programming/Automation'
-tempcontroller_measurements_path = automation_project_path + \
-    '/measurements/temperature_controller'
+AUTOMATION_PROJECT_PATH = '/home/pi/Programming/Automation/'  # end with '/'
+TEMPCONTROLLER_MEASUREMENTS_PATH = AUTOMATION_PROJECT_PATH + \
+    'measurements/temperature_controller/'
+AUTOMATION_EXECUTABLES_PATH = AUTOMATION_PROJECT_PATH + \
+    'executables/'
 
 ### remote frequency outlets ###
 ################################
@@ -101,18 +103,18 @@ outlet_groups = {
     ),
     'coffee': OutletGroup(
         r'co?ff?e?e?',
-        ['9'],
+        ['1'],
+    ),
+    'basement': OutletGroup(
+        # 'b(ase)?m(ment)?s?',
+        # no (?:...) non-capturing groups needed, since only named groups
+        # are used
+        r'ba?s?e?me?n?t?s?',  # yields 2^7 possibilities...
+        ['9', '10'],
     ),
     # 'humidifier': OutletGroup(
     #     r'hu?mi?d(ifier)?s?',
     #     ['7'],
-    # ),
-    # 'basement': OutletGroup(
-    #     # 'b(ase)?m(ment)?s?',
-    #     # no (?:...) non-capturing groups needed, since only named groups
-    #     # are used
-    #     r'ba?s?e?me?n?t?s?',  # yields 2^7 possibilities...
-    #     ['9', '10'],
     # ),
     # 'cooler': OutletGroup(
     #     r'co?o?le?r?',
@@ -143,3 +145,13 @@ groups_regex = '|'.join(groups_list)
 
 ### END remote frequency outlets ###
 ####################################
+
+Brew_Settings = collections.namedtuple(
+    'Brew_Settings', 'cycles brew_time pause')
+coffee_settings = {
+    "default": Brew_Settings(2, 15*60, 15*60),
+    "clean": Brew_Settings(30, 20, 15*60),
+    "rinse": Brew_Settings(1, 3*60, 10*60),
+    "test": Brew_Settings(1, 1, 10)
+}
+coffee_default_delay = 0

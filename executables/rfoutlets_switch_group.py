@@ -1,9 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 
-import sys
 import time
-from python_libraries.automation_modules import rfoutlets as rfo
+import argparse
+
+from remote_frequency_outlets import rfoutlets as rfo
+
+
+class CustomError(Exception):  # exception raised for testing purposes.... :(
+    pass
 
 
 # thoughts:
@@ -24,30 +29,54 @@ from python_libraries.automation_modules import rfoutlets as rfo
 # DATA (2nd pin from left) -> GPIO 21/27
 # GND (far right pin) -> Ground
 
-# Arguments:
+# Arguments: TODO use argparse with multiple string values as input.
+# but --attempts
+# and --delay
+# and --blinks
 # 1: group
 # 2: mode (on/off)
 # 3: number of attempts
 
-if len(sys.argv) > 2:
-    outlet_group = sys.argv[1]
-    mode = sys.argv[2]
-    if len(sys.argv) > 3:
-        attempts = int(sys.argv[3])
-    else:
-        attempts = 3
+parser = argparse.ArgumentParser(description="TODO")
+parser.add_argument('arguments', metavar='ARG', nargs='+',
+                    help='arguments for remote frequency outlet, e.g. rfo 10 on in 5 minutes --blinks 10 --length 5')
+parser.add_argument('--attempts', '-a',
+                    help='attempts',
+                    type=int)
+parser.add_argument('--delay', '-d',
+                    help='delay between attempts',
+                    type=int)
+parser.add_argument('--blinks', '-b',
+                    help='blinks',
+                    type=int)
+parser.add_argument('--blinkon', '-n',
+                    help='seconds length of blink on',
+                    type=int)
+parser.add_argument('--blinkoff', '-f',
+                    help='seconds length of blink off',
+                    type=int)
+args = parser.parse_args()
+args_dict = vars(args)
+for key in args_dict:
+    print(key + ' -> ' + str(args_dict[key]))
+
+# TODO make mode = 'blink' archaic: use on or off for final state only TODO ***
+
+if len(args.arguments) > 1:
+    outlet_group = args.arguments[0]
+    mode = args.arguments[1]
 
     rv = ''
-    rv = rfo.switch_outlet_group(outlet_group, mode, attempts)
+    rv = rfo.switch_outlet_group(
+        outlet_group, mode, args.attempts, args.delay, (args.blinks, args.blinkon, args.blinkoff))
     if rv:
         print(rv)
     else:
-        print('error')
+        # exception raised for testing purposes.... :(
+        raise CustomError('no outlets switched')
 else:
     print('usage example:')
     print('./rfoutlets_switch_group.py basem n 2\n')
     print('2 arguments required')
     print('group')
     print('mode (e.g.: on)')
-    print('1 optional argument:')
-    print('number of attempts')
