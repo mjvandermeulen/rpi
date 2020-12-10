@@ -84,7 +84,7 @@ def switch_outlet(outlets, mode="off", attempts=1, delay=1):
 
     for i in range(attempts):
         if i > 0:
-            time.sleep(delay)
+            time.sleep(delay/2)  # ***** TODO HACK: allow float!!!!
         for outlet in outlets:
             # print 'sending code for outlet: ' + outlet + ' with mode: ' + mode
             # print OUTLET_CODES[outlet][mode]
@@ -123,10 +123,12 @@ def switch_outlet_group(outlet_group, mode="off", attempts=3, delay=1, blink=(0,
                 outlets = automation_settings.outlet_groups[key].outlets
                 break  # outlet group match found
     if len(outlets) == 0:
-        return ''
+        return 'No outlets switched, probably because the group does not exist...'
         # Maarten doesn't think it should be
         # possible to get here.
         # A group would need to have an empty outlets list
+        # Wrong: executables/rfoutlets_switch_group.py calls this from the commandline
+        # The groups are not checked here.
 
     if attempts is None:
         attempts = 3  # TODO settings
