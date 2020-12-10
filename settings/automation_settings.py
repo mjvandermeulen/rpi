@@ -71,59 +71,85 @@ outlet_groups = {
         ['10'],
     ),
     # pytest only:
-    '1000': OutletGroup(
-        r'10|tho?u?sa?nd?',
-        ['1000'],
-    ),
+    # '1000': OutletGroup(
+    #     r'10|tho?u?sa?nd?',
+    #     ['1000'],
+    # ),
 
-    'livingroom': OutletGroup(
-        r'l(?:iving)?r(?:oom)?s?',
-        ['1', '2', '3'],
-    ),
+    # 'livingroom': OutletGroup(
+    #     r'l(?:iving)?r(?:oom)?s?',
+    #     ['1', '2', '3'],
+    # ),
+    # ''
 
+    # 'fan': OutletGroup(
+    #     r'fan\b',  # not fans: see regex with fans.
+    #                # so word boundary needed.
+    #                # word boundary overlaps with next wordboundary
+    #                # see debuggex.com, but no problem because
+    #                # r'fan\b\b\b\b\b' works equally well.
+    #     ['4'],
+    # ),
+    # 'redlight': OutletGroup(
+    #     r're?d([ -_]?lights?)?',
+    #     ['4'],
+    # ),
+    # 'guestlight': OutletGroup(
+    #     r'gu?e?st([ -_]?li?ghts?)?',
+    #     ['5'],
+    # ),
     # '"fans (noise)"': OutletGroup(
     #     r'noise?s?|fans',
     #     ['7', '3'],
     # ),
-    'tree': OutletGroup(
-        r'tre?e?s?',
-        ['4'],
+    'fireplacelights': OutletGroup(
+        r'fi?re?p?l?a?c?e?(li?ghts?)?',
+        ['6']
     ),
-    # 'snowman': OutletGroup(
-    #     r'sno?wm?a?n?',
-    #     ['6'],
-    # ),
-    'coffee': OutletGroup(
-        r'co?ff?e?e?',
-        ['6'],
-    ),
-    'airfilter': OutletGroup(
-        r'(air)?[ ]?(fi?lte?r|pu?ri?fi?e?r)',
+    'bigtree': OutletGroup(
+        r'bi?gt?r?e?e?',
         ['7'],
     ),
-    'fan': OutletGroup(
-        r'fan\b',  # not fans: see regex with fans.
-                   # so word boundary needed.
-                   # word boundary overlaps with next wordboundary
-                   # see debuggex.com, but no problem because
-                   # r'fan\b\b\b\b\b' works equally well.
+    'smalltree': OutletGroup(
+        r'sma?l?t?r?e?e?',
         ['8'],
     ),
-    'dehumidifier': OutletGroup(
-        r'de?hu?i?d?i?f?i?e?r?',
-        ['9']
+    'trees': OutletGroup(
+        r'tre?e?s?',
+        ['7', '8'],
     ),
-    'officenoise': OutletGroup(
-        r'o?ff?i?ce?no?i?s?e?',
-        ['8', '9']
+    'christmas': OutletGroup(
+        r'(ch?ri?s?t?|x)ma?s',
+        ['7', '8', '9'],
     ),
-    'basement': OutletGroup(
-        # 'b(ase)?m(ment)?s?',
-        # no (?:...) non-capturing groups needed, since only named groups
-        # are used
-        r'ba?s?e?me?n?t?s?',  # yields 2^7 possibilities...
-        ['10'],
+    'outsidelights': OutletGroup(
+        r'outs?i?d?e?l?i?g?h?t?s?',
+        ['9'],
     ),
+    'vivolights': OutletGroup(
+        r'vi?v?[oi]?a?n?li?g?h?t?s?',
+        ['4'],
+    ),
+    'vivo5': OutletGroup(
+        r'vi?v?[io]?a?n?5',
+        ['5'],
+    ),
+    # 'coffee': OutletGroup(
+    #     r'co?ff?e?e?',
+    #     [''],
+    # ),
+    # 'airfilter': OutletGroup(
+    #     r'(air)?[ ]?(fi?lte?r|pu?ri?fi?e?r)',
+    #     ['7'],
+    # ),
+    # 'dehumidifier': OutletGroup(
+    #     r'de?hu?i?d?i?f?i?e?r?',
+    #     ['9']
+    # ),
+    # 'officenoise': OutletGroup(
+    #     r'o?ff?i?ce?no?i?s?e?',
+    #     ['8', '9']
+    # ),
     # 'humidifier': OutletGroup(
     #     r'hu?mi?d(ifier)?s?',
     #     ['7'],
@@ -132,14 +158,19 @@ outlet_groups = {
     #     r'co?o?le?r?',
     #     ['6'],
     # ),
-    # 'red-light': OutletGroup(
-    #     r're?d([ ]?lights?)?',
-    #     ['4'],
-    #     ),
     # 'lights': OutletGroup(
     #     r'li?g?h?te?s?',
     #     [],
     # ),
+    # 'officelight': OutletGroup(
+    #     # are used
+    #     r'off?i?c?e?li?gh?t?',
+    #     [''],
+    # ),
+    # 'basement': OutletGroup(
+    #     r'ba?se?me?nt?',
+    #     [''],
+    # )
 }
 
 # Fluent Python implemented
