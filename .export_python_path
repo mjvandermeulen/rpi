@@ -15,7 +15,7 @@
 # $ import sys
 # $ sys.path
 
-# note that later additions are place in front
+# note that later additions are placed in front
 PYTHONPATH=~/Programming/Automation:$PYTHONPATH
 # PYTHONPATH=~/ExamplePath:$PYTHONPATH
 export PYTHONPATH

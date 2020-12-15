@@ -16,7 +16,7 @@ try:
     # TODO
     # read sys.argv
 
-    profile_name = 'test-dec'  # hardcoded
+    profile_name = 'dec-test'  # hardcoded
 
     # plot filename as arg (defaults to profile name) TODO argparse
     # arg 1: profile name
