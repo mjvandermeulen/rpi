@@ -6,7 +6,7 @@ import smtplib
 
 
 # TODO keep this or change to personal_settings
-from automation_modules import personal_settings as personal
+from settings import personal_settings as personal
 
 
 def send_email_smtp_gmail(user, pwd, recipients, subject, body):

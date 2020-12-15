@@ -15,4 +15,6 @@
 # $ import sys
 # $ sys.path
 
-export PYTHONPATH=$PYTHONPATH:~/Programming/Automation/python_libraries
+PYTHONPATH=~/Programming/Automation/python_libraries:$PYTHONPATH
+PYTHONPATH=~/Programming/Automation:$PYTHONPATH
+export PYTHONPATH
