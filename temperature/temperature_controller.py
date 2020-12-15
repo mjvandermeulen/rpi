@@ -6,23 +6,21 @@ import time
 import math
 import matplotlib.pyplot as plt
 
-from automation_classes import temperature_file_writer
-from automation_modules import automation_email  # OBSOLETE SOON
-from automation_modules import temperature_file_tools
-from automation_modules import automation_settings
+import temperature.temperature_file_writer
+import tools.mail.automation_email
+import temperature.temperature_file_tools
+import settings.automation_settings
 
 
-class Temperature (object):
+class TemperatureController (object):
     """
     """
-# TODO: change name to TemperatureController
-# TODO: rename: profile (List) to profile_stages
 # TODO: refactor to allow for celsius
 # TODO: add 'generic'    def __init__(self, profile='generic', plot_file='temperature_readings'):
 
     def __init__(self, plot_file='temperature_readings', appliance='crockpot'):
-        self.plot_file = automation_settings.tempcontroller_measurements_path + '/' + plot_file
-        self._writer = temperature_file_writer.TemperatureFileWriter(
+        self.plot_file = settings.automation_settings.TEMPCONTROLLER_MEASUREMENTS_PATH + '/' + plot_file
+        self._writer = temperature.temperature_file_writer.TemperatureFileWriter(
             self.plot_file)
 
         self.setpoint_f = -1000

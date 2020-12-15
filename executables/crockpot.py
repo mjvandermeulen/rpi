@@ -2,10 +2,11 @@
 
 import time
 
-from automation_classes import temperature_reader
-from automation_classes import temperature
-from automation_classes import powertail
-from automation_modules import temperature_file_tools
+from temperature import temperature_file_tools
+from temperature import temperature_reader
+from temperature import temperature_controller
+
+from power_control import powertail
 
 
 # MAIN
@@ -15,7 +16,7 @@ try:
     # TODO
     # read sys.argv
 
-    profile_name = 'dec-test'  # hardcoded
+    profile_name = 'test-dec'  # hardcoded
 
     # plot filename as arg (defaults to profile name) TODO argparse
     # arg 1: profile name
@@ -31,8 +32,9 @@ try:
         #         key, profile_stage[key]))
 
     temp_reader = temperature_reader.TemperatureReader()
-    tc = temperature.Temperature(plot_file=profile_name,
-                                 appliance='crockpot')  # hardcoded appliance # hardcoded profile (used for plot_file name)
+    tc = temperature_controller.TemperatureController(
+        plot_file=profile_name,
+        appliance='crockpot')  # hardcoded appliance # hardcoded profile (used for plot_file name)
 
     # init powertail
     power = powertail.PowerTail('BCM', 23, False)

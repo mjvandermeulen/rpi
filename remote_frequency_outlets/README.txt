@@ -11,7 +11,7 @@ Etekcity 5 Pack (Try promo code: BHRMTOFF)Etekcity ZAP 5LX Auto-Programmable
 Raspberry Pi B+ Ultimate Starter Kit
 Steps:
 
-Connect wires to Rf transmitter and receiver chips(wiring diagram). See this article for more info on gpio pins. If you would like to use different pins check out Ninjablocks 433Utils   GPIO Pin Layout                                                                    
+Connect wires to Rf transmitter and receiver chips(wiring diagram). See this article for more info on gpio pins. If you would like to use different pins check out Ninjablocks 433Utils   GPIO Pin Layout
 Install Rasbian on Raspberry Pi (If using Raspbian Jessie use /var/www/html/rfoutlet for all paths below)
 Install Wiring Pi
 Install Apache and PHP on the Raspberry Pi

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# pylint: skip-file
 
 # Adafruit
 # https: // learn.adafruit.com/adafruits-raspberry-pi-lesson-13-power-control
@@ -23,4 +24,4 @@ while True:
         print("POWER OFF")
         io.output(power_pin, False)
         time.sleep(5)
-    time.sleep(1)
+    time.sleep(0.5)

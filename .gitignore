@@ -8,10 +8,13 @@ personal_settings.py
 *.csv#
 
 # When remotely working from Mac
-.AppleDouble/
+.AppleDouble
 .DS_Store
+
 # Editors
 .vscode
+# no * needed, because the directory is literally named .vscode
+*.code-workspace
 
 # data from temperature readings
 *.pickle
